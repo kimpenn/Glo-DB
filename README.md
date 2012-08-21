@@ -1,4 +1,1 @@
-Glo-DB
-======
-
-Genomic Locus Operations Database
+See README file.

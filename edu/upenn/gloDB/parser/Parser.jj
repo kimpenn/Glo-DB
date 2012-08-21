@@ -1,0 +1,743 @@
+/**
+ * Copyright 2007, 2012 Stephen Fisher and Junhyong Kim, University of
+ * Pennsylvania.
+ *
+ * This file is part of Glo-DB.
+ * 
+ * Glo-DB is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Glo-DB is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Glo-DB. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+
+options {
+  LOOKAHEAD = 1;  // this is increased below as needed
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = false;
+  DEBUG_PARSER = false;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+  IGNORE_CASE = true;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = true;
+}
+
+PARSER_BEGIN(Parser)
+	package edu.upenn.gloDB.parser;
+	import edu.upenn.gloDB.*;
+	import java.io.StringReader;
+	import java.util.HashMap;
+	import java.util.HashSet;
+	import java.util.ArrayList;
+	import java.util.Iterator;
+
+
+	/**
+	 * The parser is created using javacc.  To make changes to the parser,
+	 * the files Parser.jj, Operation.java, Operator.java, and
+	 * ParserUtils.java are the only files that should be edited.  All
+	 * other files are recreated by javacc from Parser.jj.
+	 * After Parser.jj is edited, makeParser.bat should be run.  This will 
+	 * update the relevant parser java files.  After makeParser is run, then
+	 * this file should be run to add the parser changes into gloDB.jar.
+	 *
+	 */
+	public class Parser {
+		/** The String to be parsed. */
+//		public String parse = "";
+
+		/** An ArrayList containing the parsed Tracks. */
+		private ArrayList parsed = new ArrayList();
+
+		/** The set of Tracks to be used. */
+		private HashMap trackPool;
+
+		/** The set of Sequences to be used. */
+		private HashMap sequencePool;
+
+		/** 
+		 * The ID of the new Track object.
+		 */
+		private String id;
+
+		/** 
+		 * The list of Operations defined by 'parse'.
+		 */
+//		public ArrayList ops = new ArrayList();
+
+		/**
+		 * Construct a new Parser using trackPool
+		 * as the set Tracks to search.
+		 */
+		public Parser(String parse) throws ParseException {
+			this(new StringReader(parse));
+		}
+
+		//--------------------------------------------------------------------------
+		// Getters and Setters
+
+		public String getId() { return id; }
+
+		//--------------------------------------------------------------------------
+		// Miscellaneous Methods
+
+		/** 
+		 * Performs the parsing.  Returns the ops ArrayList
+		 * which is a list of operations to perform.  The first object
+		 * in the ArrayList is the ID of the new Track.
+		 */
+		public ArrayList run(HashMap trackPool, HashMap sequencePool) throws ParseException {
+			this.trackPool = trackPool;
+			this.sequencePool = sequencePool;
+			ArrayList ops = parseLine();
+
+			// if the next token is a valid token (ie an object or track) then the 
+			// parser will finish but not complain, ignoring the valid token.
+			// Here we test to see if there is any valid token following the last
+			// token parsed and if so then we know there was an error.
+			// For example, the parser won't complain about "t = t1 t2",
+			// but will stop parsing after "t1" and finish without an
+			// error.  Since this is an invalid computation, we check for
+			// it here and throw an error.  In this example, 'token'
+			// will represent "t1" and 'token.next' will contain the token "t2".
+			if (token.next.kind != 0) {
+				Token tn = token.next;
+				String msg = "Lexical error at line " + tn.beginLine + ", column " + tn.beginColumn + ".";
+				msg += "  Encountered: \"" + tn.image + "\".";
+				throw new ParseException(msg);
+			}
+
+//			GloDBUtils.printMsg("Parse table: " + ops);
+
+			// if there is an Edge without any Features, then return 'null'
+			// because "ops" can not be matched.
+			// XXX this currently only tests the top level 'group'
+			if (! validOperation(ops)) {
+				String out = "This expression has at least one empty element.\n";
+				out += "Make sure that the qualifiers (ie sequence\n";
+				out += "specifications, width, etc) are valid.";
+				GloDBUtils.printWarning(out);
+//				return null;
+			}
+
+			return ops;
+		}
+
+		/**
+		 * Test if 'ops' contains any Operations that lack a Feature.
+		 */
+		private boolean validOperation(ArrayList ops) {
+			boolean valid = true;  // flag if valid operation
+			Iterator i = ops.iterator();
+			while (i.hasNext() && valid) {
+				Operation operation = (Operation) i.next();
+				if (operation.track == null) {
+					// Recursively test any groups
+					valid = validOperation(operation.getGroup());
+				} else if (operation.track.numFeatures() == 0) {
+					valid = false;
+				}
+			}
+			return valid;
+		}
+
+		/** 
+		 * Returns the string to be parsed and the same string 
+		 * having been parsed information. 
+		 */
+		public String toString() {
+			String out = "";
+
+//			out += "Parser operation table: " + ops + "\n";
+			out += "Parser operation table: " + parsed + "\n";
+
+			return out;
+		}
+
+
+		//--------------------------------------------------------------------------
+		// Parsing Related Methods
+
+		/** Deal with length/from values. */ 
+		private void addLength(int a, int b, int c, int d) {
+			if (a == -1) {  // has 'from', no 'length'.
+				parsed.add("from");
+				if (d > -1) { parsed.add(Integer.toString(c) + ", " + Integer.toString(d)); }
+				else { parsed.add(Integer.toString(c)); }
+	
+			} else {  // has 'length'
+				parsed.add("len");
+				if (b > -1) { parsed.add(Integer.toString(a) + ", " + Integer.toString(b)); }
+				else { parsed.add(Integer.toString(a)); }
+
+				if (c > -1) {  // has 'from'
+					parsed.add("from");
+					if (d > -1) { parsed.add(Integer.toString(c) + ", " + Integer.toString(d)); }
+					else { parsed.add(Integer.toString(c)); }
+				}
+			}
+		}
+
+		/** Deal with repeat/within values. */ 
+		private void addRepeat(int a, int b, int c, int d) {
+			parsed.add("repeated");
+			if (b > -1) { parsed.add(Integer.toString(a) + ", " + Integer.toString(b)); }
+			else { parsed.add(Integer.toString(a)); }
+
+			if (c > -1) { // test for 'within'
+				parsed.add("within");
+				if (d > -1) { parsed.add(Integer.toString(c) + ", " + Integer.toString(d)); }
+				else { parsed.add(Integer.toString(c)); }
+			}
+		}
+
+		/** Chop off preceeding descriptor. */
+		private String stripDescriptor(String a) {
+			if (a.startsWith(" followed by")) { a = a.substring(12); }
+			if (a.startsWith(" then")) { a = a.substring(5); }
+			return a;
+		}	
+
+		public String formatParsed() {
+			if (parsed.isEmpty()) { return ""; }
+
+			Iterator i = parsed.iterator();
+			String out = (String) i.next();
+
+			while (i.hasNext()) {
+				String track = (String) i.next();
+				out += " " + track;
+			}
+
+			return out;
+		}
+	}
+PARSER_END(Parser)
+
+SKIP :
+{
+  " "
+| "then"
+| "followed by"
+| "\r"   // XXX: is this a 'return'? 
+| "\t"
+}
+
+TOKEN :
+{
+  < #SP0:		( " " )* >    // only used to construct tokens below (0 or more spaces)
+| < #SP1:		( " " )+ >    // only used to construct tokens below (at least 1 space)
+| < EQUALS:		"=" >
+| < SEPARATOR: "," >
+| < INTEGER:	( ["0"-"9"] )+ > 
+| < nINTEGER:	"-" <INTEGER> > 
+| < lLENGTH:	"<" >
+| < lLENGTH2:	<lLENGTH> <SP0> ";" >
+| < rLENGTH:	">" >
+| < LENGTH:		"len"
+				|	"length of" >
+| < FROM:		"from"
+				|	"from position" >
+| < lREPEAT:	"{" >
+| < rREPEAT:	"}" >
+| < lGROUP: 	"(" >
+| < rGROUP: 	")" >
+| < lSET: 		"[" >
+| < rSET: 		"]" >
+| < IGNORE:		"~" >
+| < POS:  		"POS" >
+// | < bPOS:  		"." >
+| < AND:    	"AND" >
+| < sAND:    	"sAND" >
+| < OR:    		"OR" >
+| < MINUS:		"MINUS" >
+| < sMINUS:		"sMINUS" >
+| < bAND:  		"&&" >
+| < bOR:   		"||" >
+| < bMINUS:		"-" >
+| < bNOT:		"!" >
+| < HOOK:		"?" >
+| < PLUS:		"+" >
+| < STAR:		"*" >
+| < EOL: 		"\n" >
+| < WITHIN:		"within" >
+| < TIMES:		"times" >
+| < REPEATED:	"repeated" >
+| < POSITIONS: "positions" >
+| < allTRACKS:	"__T"
+				|	"a feature in any track" >
+| < OBJECT:		["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","_","-","0"-"9"] )* >    // a track or sequence name
+| < ASSIGN:		<OBJECT> <SP0> <EQUALS> >
+| < TRACK:	   "a feature in track" <SP1> >
+| < SEQUENCE:	"S:" <SP0>
+				|	"seq" <SP1> 
+				|	"on sequence" <SP1> >
+}
+
+ArrayList parseLine():
+{
+	String assign;
+	ArrayList ops = new ArrayList();
+}
+{
+	(
+		assign=trackAssign()
+						{ this.id = assign; }
+	)
+//	expr(ops)		{ GloDBUtils.printMsg("Parsed list: " + formatParsed()); return ops; }
+	expr(ops)		{ return ops; }
+}
+
+String trackAssign():
+{
+	Token t;
+}
+{
+		t=<ASSIGN>
+			{
+				String id = (t.toString()).trim();
+				// return id without the "="
+				return (id.substring(0, id.length()-1)).trim();
+			}
+}
+
+void expr(ArrayList ops):
+{
+	Operation operation;
+}
+{
+	operation=track(-1)			{ ops.add(operation); }
+	(
+		operation=opExpr()		{ ops.add(operation); }
+	)*
+}
+
+Operation opExpr():
+{
+	int a = 0;
+	int b = Integer.MIN_VALUE;
+	int flag = -1;
+	int type;
+	int minPos = 0;  // default to 0 space
+	int maxPos = 0;  // default to 0 space
+
+	Operation operation = null;
+}
+{
+	(
+		type=operator()
+	|	type=position() ( <lREPEAT> a=nValue() ( <SEPARATOR> b=nValue() )? <rREPEAT> | flag=oRepeat() )?
+	)
+	operation=track(type)
+			{ 
+				// if POS or '.', then compute minPos and maxPos
+				if ((type == 0) || (type == 10)) {
+					if (flag == 0) { 			// <HOOK>
+						minPos = 0;
+						maxPos = 1;
+					} else if (flag == 1) {	// <PLUS>
+						minPos = 1;
+						maxPos = -1;
+					} else if (flag == 2) {	// <STAR>
+						minPos = 0;
+						maxPos = -1;
+					} else {
+						minPos = a; 
+						// make sure max => min
+						if (b < a) { maxPos = a; }
+						else { maxPos = b; }
+					}
+				}
+
+				// update OPERATOR (type) info for the current Operation
+				operation.setType(type);
+
+				// add positional info
+				operation.minPos = minPos;
+				operation.maxPos = maxPos;
+
+				return operation;
+			}
+}
+
+Operation track(int type):
+{
+	boolean ignore = false;
+	boolean negate = false;
+	Operation operation;
+}
+{ 
+	(
+		ignore()		{ ignore = true; }
+	)?
+	(
+		negate()    { negate = true; }
+	)?
+	(
+		operation=group()
+	|	operation=feature()
+	)
+			{
+				if (ignore) { operation.setIgnore(ignore); }		// set ignore flag
+				if (negate) { operation.setNegate(negate); }    // set negate flag
+			}
+	(
+		operation=densityRepeat(operation)		// add <REPEAT> info
+			{
+				/*
+				if ((type != 0) && (type != 10)) {
+					GloDBUtils.printWarning("Repeat is invalid following a \"" + Operator.getType(type) + "\" operator and will be ignored.");
+				}
+				*/
+			}
+	|	operation=operatorRepeat(operation)		// add "?", "*", "+" info
+			{
+				if ((type != 0) && (type != 10)) {
+					GloDBUtils.printWarning("Repeat is invalid following a \"" + Operator.getType(type) + "\" operator and will be ignored.");
+				}
+			}
+	|	operation=length(operation)				// add <LENGTH> info
+	|	operation=sequence(operation)				// add <SEQUENCE> info
+	)*
+			{ return operation; }
+}
+
+Operation group():
+{
+	ArrayList ops = new ArrayList();
+}
+{
+	<lGROUP>				{ parsed.add("("); }
+	expr(ops)
+	<rGROUP>				{ parsed.add(")"); }
+			{ return new Operation(ops); }
+}
+
+/*
+Operation setTracks():
+{
+	Operation operation;
+	HashSet tracks = new HashSet();
+	Track track;
+}
+{
+	<lSET>					{ parsed.add("["); }
+	(
+		track=trackRef()	{ tracks.add(track); }
+	)*
+	<rSET>					{ parsed.add("]"); }
+			{ return new Operation(tracks); }
+}
+*/
+
+Operation feature():
+{
+	Operation operation;
+	Track track;
+}
+{
+	(
+		allTracks()			
+			{ 
+				HashSet tracks = new HashSet();
+				for (Iterator i = trackPool.keySet().iterator(); i.hasNext();) {
+					String key = (String) i.next();
+					tracks.add(trackPool.get(key));
+				}
+				operation = new Operation(tracks);
+			}
+	|	track=trackRef()
+			{ operation = new Operation(track); }
+	)
+			{ return operation; }
+}
+
+Operation densityRepeat(Operation operation):
+{
+	int a = -1;
+	int b = -1;
+	int c = -1;
+	int d = -1;
+}
+{
+	(
+		<lREPEAT> a=value() ( <SEPARATOR> b=value() )? ( ";" c=value() ( <SEPARATOR> d=value() )? )? <rREPEAT>
+	|	<REPEATED> a=value() ( <SEPARATOR> b=value() )? (<TIMES>)? ( <WITHIN> c=value() ( <SEPARATOR> d=value() )? (<POSITIONS>)? )?
+	)
+			{	
+				// add items to 'parsed'
+				addRepeat(a, b, c, d);
+
+				// add repeat info.  Only add info that was actually set.
+				if (b == -1) { 
+					// if 'b' not set but 'a' is, then set 'b' equal to 'a'
+					b = a; 
+				}
+				if (c > -1) { 
+					if (d == -1) { 
+						// if 'd' not set but 'c' is, then set 'd' equal to 'c'
+						operation.setRepeat(a, b, c, c);
+					} else {
+						operation.setRepeat(a, b, c, d);
+					}	
+				} else {
+					operation.setRepeat(a, b);
+				}
+
+				return operation;
+			}
+}
+
+Operation operatorRepeat(Operation operation):
+{
+	int flag = -1;
+	int minRepeat;
+	int maxRepeat;
+}
+{
+	flag=oRepeat()
+			{ 
+				if (flag == 0) { 			// <HOOK>
+					minRepeat = 0;
+					maxRepeat = 1;
+				} else if (flag == 1) {	// <PLUS>
+					minRepeat = 1;
+					maxRepeat = -1;
+				} else {						// <STAR>
+					minRepeat = 0;
+					maxRepeat = -1;
+				}
+
+				// add repeat info
+				operation.setRepeat(minRepeat, maxRepeat);
+
+				return operation;
+			}
+}
+
+Operation length(Operation operation):
+{
+	int a = -1;
+	int b = -1;
+	int c = -1;
+	int d = -1;
+}
+{
+	(
+		// increase the lookahead here to handle the choice ambiguity below
+		LOOKAHEAD(3)
+		// using "<lLENGTH2>" instead of "<lLENGTH> ';'" reduces the choice conflicts
+		<lLENGTH2> c=value() ( <SEPARATOR> d=value() )? <rLENGTH>
+			{ addLength(a, b, c, d); }
+	|	<lLENGTH> a=value() ( <SEPARATOR> b=value() )? ( ";" c=value() ( <SEPARATOR> d=value() )? )? <rLENGTH>
+			{ addLength(a, b, c, d); }
+	|	<LENGTH> a=value() ( <SEPARATOR> b=value() )? ( <FROM> c=value() ( <SEPARATOR> d=value() )? )? 
+			{ addLength(a, b, c, d); }
+	|	<FROM> c=value() ( <SEPARATOR> d=value() )?
+			{ addLength(a, b, c, d); }
+	)
+			{ 
+				// setLength() and setSeqPos() will propogate to inner groups
+				if (a > -1) { 
+					if (b > -1) { operation.setLength(a, b); }
+					else { operation.setLength(a, a); }
+				}
+				if (c > -1) { 
+					// if no 'd' then flag that max is sequence length
+					if (d > -1) { operation.setSeqPos(c, d); }
+					else { operation.setSeqPos(c, -1); }
+				}
+				return operation;
+			}
+}
+
+Operation sequence(Operation operation):
+{
+	Sequence seq;
+}
+{
+	seq=sequenceRef()
+			{
+				// add Sequence info to the Operation.  This will propogate to
+				// all inner groups.
+				operation.setSequence(seq);
+
+				return operation;
+			}
+}
+
+void allTracks():
+{
+	Token t;
+}
+{
+		t=<allTRACKS>			{ parsed.add("T"); }
+}
+
+Track trackRef():
+{
+	Token t;
+}
+{
+		( <TRACK> )? t=<OBJECT>
+			{
+				String a = t.toString();
+//				if (a.startsWith("feature")) { a = a.substring(4);	}
+				if (a.startsWith("a feature in")) { a = a.substring(14);	}
+				if (a.startsWith("track")) { a = a.substring(8);	}
+
+				parsed.add(a);
+				if (a.startsWith("T:") || a.startsWith("t:")) {
+					a = a.substring(2);   // chop off the "T:"
+				}
+				a = a.trim();
+
+				Track track = (Track) trackPool.get(a);
+
+				if (track == null) {
+					String msg = "Track \"" + a + "\" not found.";
+//					GloDBUtils.printError(msg);
+					throw new ParseException(msg);
+				}
+				
+				return track;
+			}
+}
+
+int position():
+{
+	Token t;
+	int flag; 
+}
+{
+	(
+		t=<POS>			{ flag = 0; }
+//	|	t=<bPOS>			{ flag = 10; }
+	)
+			{
+				parsed.add(t.toString());
+				return flag;
+			} 
+}
+
+Sequence sequenceRef():
+{
+	Token t;
+	String a;
+}
+{
+	<SEQUENCE> t=<OBJECT>
+			{
+				a = t.toString();
+				if (a.startsWith("seq")) { a = a.substring(4); }
+				if (a.startsWith("on sequence")) { a = a.substring(12); }
+
+				parsed.add(a);
+				if (a.startsWith("S:") || a.startsWith("s:")) {
+					a = a.substring(2);   // chop off the "S:"
+				}
+				a = a.trim();
+
+				Sequence s = (Sequence) sequencePool.get(a);
+				if (s == null) { 
+					String msg = "Sequence \"" + a + "\" not found.";
+//					GloDBUtils.printError(msg);
+					throw new ParseException(msg);
+				}
+
+				return s;
+			}
+}
+
+void ignore():
+{
+	Token t;
+}
+{
+	t=<IGNORE>			{ parsed.add(t.toString()); } 
+
+}
+
+void negate():
+{
+	Token t;
+}
+{
+	t=<bNOT>				{ parsed.add(t.toString()); } 
+}
+
+int operator():
+{
+	Token t;
+	int flag;
+}
+{
+	(
+		t=<AND>			{ flag = 1; }
+	|	t=<OR>			{ flag = 2; }
+	|	t=<MINUS>		{ flag = 3; }
+	|	t=<sAND>			{ flag = 4; }
+	|	t=<sMINUS>		{ flag = 5; }
+	|	t=<bAND>			{ flag = 11; }
+	|	t=<bOR>			{ flag = 12; }
+	|	t=<bMINUS>		{ flag = 13; }
+	)
+			{
+				parsed.add(t.toString());
+				return flag;
+			} 
+}
+
+int oRepeat():
+{
+	Token t;
+	int flag; 
+}
+{
+	(
+		t=<HOOK>			{ flag = 0; } 
+	|	t=<PLUS>			{ flag = 1; } 
+	|	t=<STAR>			{ flag = 2; } 
+	)
+			{
+				parsed.add(t.toString());
+				return flag;
+			} 
+}
+
+int value():
+{
+	Token t;
+}
+{
+	t=<INTEGER>			{ return Integer.parseInt(t.toString()); }
+}
+
+int nValue():
+{
+	Token t;
+}
+{
+	(
+		t=<INTEGER>			{ return Integer.parseInt(t.toString()); }
+	|	t=<nINTEGER>		{ return Integer.parseInt(t.toString()); }
+	)
+}

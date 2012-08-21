@@ -1,0 +1,301 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright 2007, 2012 Stephen Fisher and Junhyong Kim, University of<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Pennsylvania.<a name="line.3"></a>
+<FONT color="green">004</FONT>     *<a name="line.4"></a>
+<FONT color="green">005</FONT>     * This file is part of Glo-DB.<a name="line.5"></a>
+<FONT color="green">006</FONT>     * <a name="line.6"></a>
+<FONT color="green">007</FONT>     * Glo-DB is free software: you can redistribute it and/or modify it<a name="line.7"></a>
+<FONT color="green">008</FONT>     * under the terms of the GNU General Public License as published by<a name="line.8"></a>
+<FONT color="green">009</FONT>     * the Free Software Foundation, either version 3 of the License, or<a name="line.9"></a>
+<FONT color="green">010</FONT>     * (at your option) any later version.<a name="line.10"></a>
+<FONT color="green">011</FONT>     * <a name="line.11"></a>
+<FONT color="green">012</FONT>     * Glo-DB is distributed in the hope that it will be useful, but<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.13"></a>
+<FONT color="green">014</FONT>     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU<a name="line.14"></a>
+<FONT color="green">015</FONT>     * General Public License for more details.<a name="line.15"></a>
+<FONT color="green">016</FONT>     * <a name="line.16"></a>
+<FONT color="green">017</FONT>     * You should have received a copy of the GNU General Public License<a name="line.17"></a>
+<FONT color="green">018</FONT>     * along with Glo-DB. If not, see &lt;http://www.gnu.org/licenses/&gt;.<a name="line.18"></a>
+<FONT color="green">019</FONT>     *<a name="line.19"></a>
+<FONT color="green">020</FONT>     * @(#)ExactFeature.java<a name="line.20"></a>
+<FONT color="green">021</FONT>     */<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    package edu.upenn.gloDB;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    /**<a name="line.25"></a>
+<FONT color="green">026</FONT>     * These objects store exact positions bounding a Feature.  For point<a name="line.26"></a>
+<FONT color="green">027</FONT>     * Features just set start and stop equal.  At some point it might be<a name="line.27"></a>
+<FONT color="green">028</FONT>     * advantageous to create a PointFeature class which would only have<a name="line.28"></a>
+<FONT color="green">029</FONT>     * one position.<a name="line.29"></a>
+<FONT color="green">030</FONT>     *<a name="line.30"></a>
+<FONT color="green">031</FONT>     * @author  Stephen Fisher<a name="line.31"></a>
+<FONT color="green">032</FONT>     * @version $Id: ExactFeature.java,v 1.1.2.9 2005/01/07 19:56:59 fisher Exp $<a name="line.32"></a>
+<FONT color="green">033</FONT>     */<a name="line.33"></a>
+<FONT color="green">034</FONT>    <a name="line.34"></a>
+<FONT color="green">035</FONT>    public class ExactFeature extends AbstractFeature {<a name="line.35"></a>
+<FONT color="green">036</FONT>    <a name="line.36"></a>
+<FONT color="green">037</FONT>             /** The initial position defining this Feature. */<a name="line.37"></a>
+<FONT color="green">038</FONT>             private int start;<a name="line.38"></a>
+<FONT color="green">039</FONT>    <a name="line.39"></a>
+<FONT color="green">040</FONT>             /** The last position defining this Feature. */<a name="line.40"></a>
+<FONT color="green">041</FONT>             private int stop;<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>    <a name="line.43"></a>
+<FONT color="green">044</FONT>             /** <a name="line.44"></a>
+<FONT color="green">045</FONT>              * Create a new ExactFeature object and add it to the set of<a name="line.45"></a>
+<FONT color="green">046</FONT>              * Feature objects.<a name="line.46"></a>
+<FONT color="green">047</FONT>              */<a name="line.47"></a>
+<FONT color="green">048</FONT>             public ExactFeature(int start, int stop, Sequence source) { <a name="line.48"></a>
+<FONT color="green">049</FONT>                      this(start, stop, source, true);<a name="line.49"></a>
+<FONT color="green">050</FONT>             }<a name="line.50"></a>
+<FONT color="green">051</FONT>    <a name="line.51"></a>
+<FONT color="green">052</FONT>             /** <a name="line.52"></a>
+<FONT color="green">053</FONT>              * Create a new ExactFeature object and add the newly created<a name="line.53"></a>
+<FONT color="green">054</FONT>              * ExactFeature object to the set of Feature objects if addToPool<a name="line.54"></a>
+<FONT color="green">055</FONT>              * is true.<a name="line.55"></a>
+<FONT color="green">056</FONT>              * @XXX This should probably be 'protected' instead of 'public'<a name="line.56"></a>
+<FONT color="green">057</FONT>              * because all ExactFeatures should really be added to<a name="line.57"></a>
+<FONT color="green">058</FONT>              * featurePool.<a name="line.58"></a>
+<FONT color="green">059</FONT>              */<a name="line.59"></a>
+<FONT color="green">060</FONT>             public ExactFeature(int start, int stop, Sequence source, boolean addToPool) {<a name="line.60"></a>
+<FONT color="green">061</FONT>                      super(source);<a name="line.61"></a>
+<FONT color="green">062</FONT>    <a name="line.62"></a>
+<FONT color="green">063</FONT>                      // start/stop aren't allowed to change, so this is the only<a name="line.63"></a>
+<FONT color="green">064</FONT>                      // place they should be set.<a name="line.64"></a>
+<FONT color="green">065</FONT>                      this.start = start;<a name="line.65"></a>
+<FONT color="green">066</FONT>                      this.stop = stop;<a name="line.66"></a>
+<FONT color="green">067</FONT>    <a name="line.67"></a>
+<FONT color="green">068</FONT>                      // add self to set of all Features<a name="line.68"></a>
+<FONT color="green">069</FONT>                      if (addToPool) ObjectHandles.addFeature(this);<a name="line.69"></a>
+<FONT color="green">070</FONT>             }<a name="line.70"></a>
+<FONT color="green">071</FONT>    <a name="line.71"></a>
+<FONT color="green">072</FONT>    <a name="line.72"></a>
+<FONT color="green">073</FONT>        //--------------------------------------------------------------------------<a name="line.73"></a>
+<FONT color="green">074</FONT>        // Setters and Getters<a name="line.74"></a>
+<FONT color="green">075</FONT>       <a name="line.75"></a>
+<FONT color="green">076</FONT>        /** Returns the start position. */<a name="line.76"></a>
+<FONT color="green">077</FONT>        public int getStart() { return start; }<a name="line.77"></a>
+<FONT color="green">078</FONT>             <a name="line.78"></a>
+<FONT color="green">079</FONT>        /** Returns the stop position. */<a name="line.79"></a>
+<FONT color="green">080</FONT>        public int getStop() { return stop; }<a name="line.80"></a>
+<FONT color="green">081</FONT>             <a name="line.81"></a>
+<FONT color="green">082</FONT>        //--------------------------------------------------------------------------<a name="line.82"></a>
+<FONT color="green">083</FONT>        // Miscellaneous Methods<a name="line.83"></a>
+<FONT color="green">084</FONT>       <a name="line.84"></a>
+<FONT color="green">085</FONT>             /** <a name="line.85"></a>
+<FONT color="green">086</FONT>              * Returns the Sequence data from start to stop. <a name="line.86"></a>
+<FONT color="green">087</FONT>              */<a name="line.87"></a>
+<FONT color="green">088</FONT>             public String getData() { return getSource().getDataBounded(start, stop); }<a name="line.88"></a>
+<FONT color="green">089</FONT>    <a name="line.89"></a>
+<FONT color="green">090</FONT>             /** <a name="line.90"></a>
+<FONT color="green">091</FONT>              * Returns the Sequence data from start to stop, with "\n"<a name="line.91"></a>
+<FONT color="green">092</FONT>              * inserted every Sequence.FORMAT_WIDTH characters (usually 50 to<a name="line.92"></a>
+<FONT color="green">093</FONT>              * 80 chars).<a name="line.93"></a>
+<FONT color="green">094</FONT>              */<a name="line.94"></a>
+<FONT color="green">095</FONT>             public String getDataFormatted() { <a name="line.95"></a>
+<FONT color="green">096</FONT>                      return getSource().getDataBoundedFormatted(start, stop); <a name="line.96"></a>
+<FONT color="green">097</FONT>             }<a name="line.97"></a>
+<FONT color="green">098</FONT>    <a name="line.98"></a>
+<FONT color="green">099</FONT>             /**<a name="line.99"></a>
+<FONT color="green">100</FONT>              * Returns the number of positions contained in the Feature ((stop<a name="line.100"></a>
+<FONT color="green">101</FONT>              * - start) + 1).<a name="line.101"></a>
+<FONT color="green">102</FONT>              */<a name="line.102"></a>
+<FONT color="green">103</FONT>             public int length() { return ((stop - start) + 1); }<a name="line.103"></a>
+<FONT color="green">104</FONT>    <a name="line.104"></a>
+<FONT color="green">105</FONT>             /**<a name="line.105"></a>
+<FONT color="green">106</FONT>              * Returns the initial position of the Feature.<a name="line.106"></a>
+<FONT color="green">107</FONT>              * @XXX This will return the same value as getStart().<a name="line.107"></a>
+<FONT color="green">108</FONT>              */<a name="line.108"></a>
+<FONT color="green">109</FONT>             public int getMin() { return start; }<a name="line.109"></a>
+<FONT color="green">110</FONT>    <a name="line.110"></a>
+<FONT color="green">111</FONT>             /**<a name="line.111"></a>
+<FONT color="green">112</FONT>              * Returns the maximum position of the Feature.<a name="line.112"></a>
+<FONT color="green">113</FONT>              * @XXX This will return the same value as getStop().<a name="line.113"></a>
+<FONT color="green">114</FONT>              */<a name="line.114"></a>
+<FONT color="green">115</FONT>             public int getMax() { return stop; }<a name="line.115"></a>
+<FONT color="green">116</FONT>    <a name="line.116"></a>
+<FONT color="green">117</FONT>             /**<a name="line.117"></a>
+<FONT color="green">118</FONT>              * Inverts the positions, returning a new Feature object.  For<a name="line.118"></a>
+<FONT color="green">119</FONT>              * example, if the Feature had a start position of 10 and a stop<a name="line.119"></a>
+<FONT color="green">120</FONT>              * position of 20 on a contig that was 100 positions long, then<a name="line.120"></a>
+<FONT color="green">121</FONT>              * flipping the Feature would result in a new Feature object with<a name="line.121"></a>
+<FONT color="green">122</FONT>              * a start position of 80 and a stop position of 90.<a name="line.122"></a>
+<FONT color="green">123</FONT>              * @XXX Not yet implemented.<a name="line.123"></a>
+<FONT color="green">124</FONT>              */<a name="line.124"></a>
+<FONT color="green">125</FONT>             public Feature flip() { return null; }<a name="line.125"></a>
+<FONT color="green">126</FONT>    <a name="line.126"></a>
+<FONT color="green">127</FONT>             /**<a name="line.127"></a>
+<FONT color="green">128</FONT>              * Returns '-1' if this Feature exists after the integer 'pos',<a name="line.128"></a>
+<FONT color="green">129</FONT>              * returns '0' if 'pos' is contained in this Feature, and '1' if<a name="line.129"></a>
+<FONT color="green">130</FONT>              * 'pos' occurs after this Feature.<a name="line.130"></a>
+<FONT color="green">131</FONT>              * @XXX This assumes 'pos' is positive and within this Feature's<a name="line.131"></a>
+<FONT color="green">132</FONT>              * Sequence boundaries.<a name="line.132"></a>
+<FONT color="green">133</FONT>              */<a name="line.133"></a>
+<FONT color="green">134</FONT>             public int contains(int pos) {<a name="line.134"></a>
+<FONT color="green">135</FONT>                      return FeatureUtils.contains(this, pos);<a name="line.135"></a>
+<FONT color="green">136</FONT>             }<a name="line.136"></a>
+<FONT color="green">137</FONT>    <a name="line.137"></a>
+<FONT color="green">138</FONT>             /**<a name="line.138"></a>
+<FONT color="green">139</FONT>              * Returns 'true' if the Feature 'feature' exists within this<a name="line.139"></a>
+<FONT color="green">140</FONT>              * Feature.<a name="line.140"></a>
+<FONT color="green">141</FONT>              */<a name="line.141"></a>
+<FONT color="green">142</FONT>             public boolean contains(Feature feature) { <a name="line.142"></a>
+<FONT color="green">143</FONT>                      return FeatureUtils.contains(this, feature);<a name="line.143"></a>
+<FONT color="green">144</FONT>             }<a name="line.144"></a>
+<FONT color="green">145</FONT>    <a name="line.145"></a>
+<FONT color="green">146</FONT>             /**<a name="line.146"></a>
+<FONT color="green">147</FONT>              * Returns 'true' if the Feature 'feature' has a position that<a name="line.147"></a>
+<FONT color="green">148</FONT>              * overlaps this Feature.<a name="line.148"></a>
+<FONT color="green">149</FONT>              */<a name="line.149"></a>
+<FONT color="green">150</FONT>             public boolean overlaps(Feature feature) { <a name="line.150"></a>
+<FONT color="green">151</FONT>                      return FeatureUtils.overlaps(this, feature);<a name="line.151"></a>
+<FONT color="green">152</FONT>             }<a name="line.152"></a>
+<FONT color="green">153</FONT>    <a name="line.153"></a>
+<FONT color="green">154</FONT>             /**<a name="line.154"></a>
+<FONT color="green">155</FONT>              * Returns the overlapping region between the two Features.  If no<a name="line.155"></a>
+<FONT color="green">156</FONT>              * overlap, then null is returned.<a name="line.156"></a>
+<FONT color="green">157</FONT>              */<a name="line.157"></a>
+<FONT color="green">158</FONT>             public Feature overlap(Feature feature) { <a name="line.158"></a>
+<FONT color="green">159</FONT>                      return FeatureUtils.overlap(this, feature);<a name="line.159"></a>
+<FONT color="green">160</FONT>             }<a name="line.160"></a>
+<FONT color="green">161</FONT>    <a name="line.161"></a>
+<FONT color="green">162</FONT>             /**<a name="line.162"></a>
+<FONT color="green">163</FONT>              * Compares this object with the specified object for order.<a name="line.163"></a>
+<FONT color="green">164</FONT>              * Returns a negative integer, zero, or a positive integer as this<a name="line.164"></a>
+<FONT color="green">165</FONT>              * object is less than, equal to, or greater than the specified<a name="line.165"></a>
+<FONT color="green">166</FONT>              * object.  If can't cast argument as an Feature, then throws a<a name="line.166"></a>
+<FONT color="green">167</FONT>              * java.lang.ClassCastException.  If different sources, then sorts<a name="line.167"></a>
+<FONT color="green">168</FONT>              * on the source ID.<a name="line.168"></a>
+<FONT color="green">169</FONT>              */<a name="line.169"></a>
+<FONT color="green">170</FONT>             public int compareTo(Object o) throws ClassCastException {<a name="line.170"></a>
+<FONT color="green">171</FONT>                      // convert object to Feature<a name="line.171"></a>
+<FONT color="green">172</FONT>                      Feature featureTo;<a name="line.172"></a>
+<FONT color="green">173</FONT>                      try {<a name="line.173"></a>
+<FONT color="green">174</FONT>                                    featureTo = (Feature) o;<a name="line.174"></a>
+<FONT color="green">175</FONT>                      } catch (ClassCastException e) {<a name="line.175"></a>
+<FONT color="green">176</FONT>                                    throw new ClassCastException("ExactFeature.compareTo() requires an argument of type Feature.");<a name="line.176"></a>
+<FONT color="green">177</FONT>                      }<a name="line.177"></a>
+<FONT color="green">178</FONT>                      return FeatureUtils.compareFeatures(this, featureTo);<a name="line.178"></a>
+<FONT color="green">179</FONT>             }<a name="line.179"></a>
+<FONT color="green">180</FONT>    <a name="line.180"></a>
+<FONT color="green">181</FONT>             /**<a name="line.181"></a>
+<FONT color="green">182</FONT>              * This will return true if the features are equal and the<a name="line.182"></a>
+<FONT color="green">183</FONT>              * sources are the same.  If can't cast argument as an<a name="line.183"></a>
+<FONT color="green">184</FONT>              * ExactFeature, then throws a java.lang.ClassCastException.<a name="line.184"></a>
+<FONT color="green">185</FONT>              */<a name="line.185"></a>
+<FONT color="green">186</FONT>             public boolean equals(Object o) throws ClassCastException {<a name="line.186"></a>
+<FONT color="green">187</FONT>                      // make sure we got an 'ExactFeature' object<a name="line.187"></a>
+<FONT color="green">188</FONT>                      if (GloDBUtils.getClassName(o) != "ExactFeature") return false;<a name="line.188"></a>
+<FONT color="green">189</FONT>    <a name="line.189"></a>
+<FONT color="green">190</FONT>                      // convert object to Feature<a name="line.190"></a>
+<FONT color="green">191</FONT>                      ExactFeature featureTo;<a name="line.191"></a>
+<FONT color="green">192</FONT>                      try {<a name="line.192"></a>
+<FONT color="green">193</FONT>                                    featureTo = (ExactFeature) o;<a name="line.193"></a>
+<FONT color="green">194</FONT>                      } catch (ClassCastException e) {<a name="line.194"></a>
+<FONT color="green">195</FONT>                                    throw new ClassCastException("ExactFeature.equals() requires an argument of type ExactFeature.");<a name="line.195"></a>
+<FONT color="green">196</FONT>                      }<a name="line.196"></a>
+<FONT color="green">197</FONT>    <a name="line.197"></a>
+<FONT color="green">198</FONT>                      // check of same source<a name="line.198"></a>
+<FONT color="green">199</FONT>                      if (source != featureTo.source) return false;<a name="line.199"></a>
+<FONT color="green">200</FONT>    <a name="line.200"></a>
+<FONT color="green">201</FONT>                      // check if start and stop are equal<a name="line.201"></a>
+<FONT color="green">202</FONT>                      if ((start == featureTo.getStart()) &amp;&amp; (stop == featureTo.getStop())) {<a name="line.202"></a>
+<FONT color="green">203</FONT>                                    return true;<a name="line.203"></a>
+<FONT color="green">204</FONT>                      } else {<a name="line.204"></a>
+<FONT color="green">205</FONT>                                    return false;<a name="line.205"></a>
+<FONT color="green">206</FONT>                      }<a name="line.206"></a>
+<FONT color="green">207</FONT>             }<a name="line.207"></a>
+<FONT color="green">208</FONT>    <a name="line.208"></a>
+<FONT color="green">209</FONT>             /** Only basic Feature information. */<a name="line.209"></a>
+<FONT color="green">210</FONT>             public String toString() {<a name="line.210"></a>
+<FONT color="green">211</FONT>                      String out = "Exact Feature (" + source + "): ";<a name="line.211"></a>
+<FONT color="green">212</FONT>                      out += "(" + Integer.toString(start) + ".." + Integer.toString(stop) + ") \n";<a name="line.212"></a>
+<FONT color="green">213</FONT>                      return out;<a name="line.213"></a>
+<FONT color="green">214</FONT>             }<a name="line.214"></a>
+<FONT color="green">215</FONT>    <a name="line.215"></a>
+<FONT color="green">216</FONT>             /** Only returns start/stop position information. */<a name="line.216"></a>
+<FONT color="green">217</FONT>             public String toStringMin() {<a name="line.217"></a>
+<FONT color="green">218</FONT>                      return "(" + Integer.toString(start) + ".." + Integer.toString(stop) + ")";<a name="line.218"></a>
+<FONT color="green">219</FONT>             }<a name="line.219"></a>
+<FONT color="green">220</FONT>    <a name="line.220"></a>
+<FONT color="green">221</FONT>             /** Returns all Feature information. */<a name="line.221"></a>
+<FONT color="green">222</FONT>             public String toStringFull() {<a name="line.222"></a>
+<FONT color="green">223</FONT>                      String out = "Exact Feature:\n";<a name="line.223"></a>
+<FONT color="green">224</FONT>                      //              String out = "Exact Feature (" + source + "): ";<a name="line.224"></a>
+<FONT color="green">225</FONT>                      //              out += "(" + Integer.toString(start) + ".." + Integer.toString(stop) + ") \n";<a name="line.225"></a>
+<FONT color="green">226</FONT>    <a name="line.226"></a>
+<FONT color="green">227</FONT>                      out += "Start: " + Integer.toString(start) + "\n";<a name="line.227"></a>
+<FONT color="green">228</FONT>                      out += "Stop: " + Integer.toString(stop) + "\n";<a name="line.228"></a>
+<FONT color="green">229</FONT>                     <a name="line.229"></a>
+<FONT color="green">230</FONT>                      out += super.toString();  // get attributes and source info<a name="line.230"></a>
+<FONT color="green">231</FONT>    <a name="line.231"></a>
+<FONT color="green">232</FONT>                      return out;<a name="line.232"></a>
+<FONT color="green">233</FONT>             }<a name="line.233"></a>
+<FONT color="green">234</FONT>            <a name="line.234"></a>
+<FONT color="green">235</FONT>    } // ExactFeature.java<a name="line.235"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

@@ -1,0 +1,150 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright 2007, 2012 Stephen Fisher and Junhyong Kim, University of<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Pennsylvania.<a name="line.3"></a>
+<FONT color="green">004</FONT>     *<a name="line.4"></a>
+<FONT color="green">005</FONT>     * This file is part of Glo-DB.<a name="line.5"></a>
+<FONT color="green">006</FONT>     * <a name="line.6"></a>
+<FONT color="green">007</FONT>     * Glo-DB is free software: you can redistribute it and/or modify it<a name="line.7"></a>
+<FONT color="green">008</FONT>     * under the terms of the GNU General Public License as published by<a name="line.8"></a>
+<FONT color="green">009</FONT>     * the Free Software Foundation, either version 3 of the License, or<a name="line.9"></a>
+<FONT color="green">010</FONT>     * (at your option) any later version.<a name="line.10"></a>
+<FONT color="green">011</FONT>     * <a name="line.11"></a>
+<FONT color="green">012</FONT>     * Glo-DB is distributed in the hope that it will be useful, but<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.13"></a>
+<FONT color="green">014</FONT>     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU<a name="line.14"></a>
+<FONT color="green">015</FONT>     * General Public License for more details.<a name="line.15"></a>
+<FONT color="green">016</FONT>     * <a name="line.16"></a>
+<FONT color="green">017</FONT>     * You should have received a copy of the GNU General Public License<a name="line.17"></a>
+<FONT color="green">018</FONT>     * along with Glo-DB. If not, see &lt;http://www.gnu.org/licenses/&gt;.<a name="line.18"></a>
+<FONT color="green">019</FONT>     *<a name="line.19"></a>
+<FONT color="green">020</FONT>     * @(#)FASTAParserMinimal.java<a name="line.20"></a>
+<FONT color="green">021</FONT>     */<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    package edu.upenn.gloDB.io;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.util.HashMap;<a name="line.25"></a>
+<FONT color="green">026</FONT>    <a name="line.26"></a>
+<FONT color="green">027</FONT>    /**<a name="line.27"></a>
+<FONT color="green">028</FONT>     * Parses the header line at the beginning of each FASTA sequence.<a name="line.28"></a>
+<FONT color="green">029</FONT>     * The header line is chopped into substrings at each space (" ").  If<a name="line.29"></a>
+<FONT color="green">030</FONT>     * a substring contains a ":" then it is assumed to be a key:value<a name="line.30"></a>
+<FONT color="green">031</FONT>     * pair and is added to the attributes field as such.  Otherwise, it<a name="line.31"></a>
+<FONT color="green">032</FONT>     * is added as a value to the 'descriptors' key.  This is very similar<a name="line.32"></a>
+<FONT color="green">033</FONT>     * to FASTAParserFly.java, however it doesn't processes the<a name="line.33"></a>
+<FONT color="green">034</FONT>     * gene_boundaries in any special way.  Thus this should not be used<a name="line.34"></a>
+<FONT color="green">035</FONT>     * for FASTA files that contain Features.<a name="line.35"></a>
+<FONT color="green">036</FONT>     *<a name="line.36"></a>
+<FONT color="green">037</FONT>     * @XXX this assumes that the header starts with a sequence ID.<a name="line.37"></a>
+<FONT color="green">038</FONT>     *<a name="line.38"></a>
+<FONT color="green">039</FONT>     * @author  Stephen Fisher<a name="line.39"></a>
+<FONT color="green">040</FONT>     * @version $Id: FASTAParserMinimal.java,v 1.7.2.4 2007/03/01 21:17:33 fisher Exp $<a name="line.40"></a>
+<FONT color="green">041</FONT>     */<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>    public class FASTAParserMinimal implements FASTAParser {<a name="line.43"></a>
+<FONT color="green">044</FONT>             <a name="line.44"></a>
+<FONT color="green">045</FONT>             public HashMap parseHeader(String header) {<a name="line.45"></a>
+<FONT color="green">046</FONT>                      HashMap attributes = new HashMap();<a name="line.46"></a>
+<FONT color="green">047</FONT>                      String descriptors = "";<a name="line.47"></a>
+<FONT color="green">048</FONT>                      <a name="line.48"></a>
+<FONT color="green">049</FONT>                      // chop off the "&gt;" from the beginning of the header<a name="line.49"></a>
+<FONT color="green">050</FONT>                      header = header.substring(1);<a name="line.50"></a>
+<FONT color="green">051</FONT>                      <a name="line.51"></a>
+<FONT color="green">052</FONT>                      // split header at each space <a name="line.52"></a>
+<FONT color="green">053</FONT>                      String[] attribs = header.split(" ");<a name="line.53"></a>
+<FONT color="green">054</FONT>                      <a name="line.54"></a>
+<FONT color="green">055</FONT>                      // the header is assumed to start with a sequence ID<a name="line.55"></a>
+<FONT color="green">056</FONT>                      attributes.put("ID", attribs[0]);<a name="line.56"></a>
+<FONT color="green">057</FONT>                      <a name="line.57"></a>
+<FONT color="green">058</FONT>                      //              GloDBUtils.printMsg("Loading: " + attribs[0]);<a name="line.58"></a>
+<FONT color="green">059</FONT>                      <a name="line.59"></a>
+<FONT color="green">060</FONT>                      String[] tmp;<a name="line.60"></a>
+<FONT color="green">061</FONT>                      for (int i = 1; i &lt; attribs.length; i++) {<a name="line.61"></a>
+<FONT color="green">062</FONT>                                    // split the substring at each colon<a name="line.62"></a>
+<FONT color="green">063</FONT>                                    tmp = attribs[i].split(":", 2);<a name="line.63"></a>
+<FONT color="green">064</FONT>                                    <a name="line.64"></a>
+<FONT color="green">065</FONT>                                    // if tmp only has one value, then the substring <a name="line.65"></a>
+<FONT color="green">066</FONT>                                    // didn't contain a ":", so add it as a descriptor.<a name="line.66"></a>
+<FONT color="green">067</FONT>                                    if (tmp.length == 1) {<a name="line.67"></a>
+<FONT color="green">068</FONT>                                             descriptors += " " + tmp[0];<a name="line.68"></a>
+<FONT color="green">069</FONT>                                    } else {<a name="line.69"></a>
+<FONT color="green">070</FONT>                                             //                                      GloDBUtils.printMsg(attribs[i]+"  "+tmp[0]+"   "+tmp[1]);<a name="line.70"></a>
+<FONT color="green">071</FONT>                                             attributes.put(tmp[0], tmp[1]);<a name="line.71"></a>
+<FONT color="green">072</FONT>                                    }<a name="line.72"></a>
+<FONT color="green">073</FONT>                      }<a name="line.73"></a>
+<FONT color="green">074</FONT>                      <a name="line.74"></a>
+<FONT color="green">075</FONT>                      // only add descriptors if they actually exist.<a name="line.75"></a>
+<FONT color="green">076</FONT>                      if (descriptors.length() &gt; 0) {<a name="line.76"></a>
+<FONT color="green">077</FONT>                                    attributes.put("descriptors", descriptors);<a name="line.77"></a>
+<FONT color="green">078</FONT>                      }<a name="line.78"></a>
+<FONT color="green">079</FONT>                      <a name="line.79"></a>
+<FONT color="green">080</FONT>                      return attributes;<a name="line.80"></a>
+<FONT color="green">081</FONT>             }<a name="line.81"></a>
+<FONT color="green">082</FONT>    <a name="line.82"></a>
+<FONT color="green">083</FONT>    }  // FASTAParserMinimal.java<a name="line.83"></a>
+<FONT color="green">084</FONT>             <a name="line.84"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

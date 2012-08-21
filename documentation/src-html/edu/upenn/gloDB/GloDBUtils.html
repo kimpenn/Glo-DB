@@ -1,0 +1,300 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright 2007, 2012 Stephen Fisher and Junhyong Kim, University of<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Pennsylvania.<a name="line.3"></a>
+<FONT color="green">004</FONT>     *<a name="line.4"></a>
+<FONT color="green">005</FONT>     * This file is part of Glo-DB.<a name="line.5"></a>
+<FONT color="green">006</FONT>     * <a name="line.6"></a>
+<FONT color="green">007</FONT>     * Glo-DB is free software: you can redistribute it and/or modify it<a name="line.7"></a>
+<FONT color="green">008</FONT>     * under the terms of the GNU General Public License as published by<a name="line.8"></a>
+<FONT color="green">009</FONT>     * the Free Software Foundation, either version 3 of the License, or<a name="line.9"></a>
+<FONT color="green">010</FONT>     * (at your option) any later version.<a name="line.10"></a>
+<FONT color="green">011</FONT>     * <a name="line.11"></a>
+<FONT color="green">012</FONT>     * Glo-DB is distributed in the hope that it will be useful, but<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.13"></a>
+<FONT color="green">014</FONT>     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU<a name="line.14"></a>
+<FONT color="green">015</FONT>     * General Public License for more details.<a name="line.15"></a>
+<FONT color="green">016</FONT>     * <a name="line.16"></a>
+<FONT color="green">017</FONT>     * You should have received a copy of the GNU General Public License<a name="line.17"></a>
+<FONT color="green">018</FONT>     * along with Glo-DB. If not, see &lt;http://www.gnu.org/licenses/&gt;.<a name="line.18"></a>
+<FONT color="green">019</FONT>     *<a name="line.19"></a>
+<FONT color="green">020</FONT>     * @(#)GloDBUtils.java<a name="line.20"></a>
+<FONT color="green">021</FONT>     */<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    package edu.upenn.gloDB;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.awt.Toolkit;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import javax.swing.JTextArea;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.util.zip.Deflater;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.util.zip.Inflater;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.io.ByteArrayOutputStream;<a name="line.29"></a>
+<FONT color="green">030</FONT>    <a name="line.30"></a>
+<FONT color="green">031</FONT>    /**<a name="line.31"></a>
+<FONT color="green">032</FONT>     * GloDBUtils.  Miscellaneous functions.<a name="line.32"></a>
+<FONT color="green">033</FONT>     *<a name="line.33"></a>
+<FONT color="green">034</FONT>     * @author  Stephen Fisher<a name="line.34"></a>
+<FONT color="green">035</FONT>     * @version $Id: GloDBUtils.java,v 1.1.2.9 2007/03/01 21:17:32 fisher Exp $<a name="line.35"></a>
+<FONT color="green">036</FONT>     */<a name="line.36"></a>
+<FONT color="green">037</FONT>    <a name="line.37"></a>
+<FONT color="green">038</FONT>    public class GloDBUtils {<a name="line.38"></a>
+<FONT color="green">039</FONT>    <a name="line.39"></a>
+<FONT color="green">040</FONT>             public final static int TRACK = 1;<a name="line.40"></a>
+<FONT color="green">041</FONT>             public final static int SEQUENCE = 2;<a name="line.41"></a>
+<FONT color="green">042</FONT>             public final static int FEATURE = 3;<a name="line.42"></a>
+<FONT color="green">043</FONT>             <a name="line.43"></a>
+<FONT color="green">044</FONT>             public final static int WARNING = 1;<a name="line.44"></a>
+<FONT color="green">045</FONT>             public final static int ERROR = 2;<a name="line.45"></a>
+<FONT color="green">046</FONT>             public final static int FEEDBACK = 3;<a name="line.46"></a>
+<FONT color="green">047</FONT>    <a name="line.47"></a>
+<FONT color="green">048</FONT>             /** <a name="line.48"></a>
+<FONT color="green">049</FONT>              * Amount of detailed feedback: 2 = lots, 1 = no warnings, 0 = no<a name="line.49"></a>
+<FONT color="green">050</FONT>              * feedback.<a name="line.50"></a>
+<FONT color="green">051</FONT>              */<a name="line.51"></a>
+<FONT color="green">052</FONT>             private static int VERBOSE = GloDBMain.userDefaults.getInt("VERBOSE", 1);<a name="line.52"></a>
+<FONT color="green">053</FONT>    <a name="line.53"></a>
+<FONT color="green">054</FONT>             /**<a name="line.54"></a>
+<FONT color="green">055</FONT>              * This flag is used in FeatureUtils.compareFeatures() to compare<a name="line.55"></a>
+<FONT color="green">056</FONT>              * two Features.  If 'true', then only the Feature source and<a name="line.56"></a>
+<FONT color="green">057</FONT>              * start/stop positions will be used.  If 'false', then the<a name="line.57"></a>
+<FONT color="green">058</FONT>              * hashCode of the attributes HashMap will also be used.  This<a name="line.58"></a>
+<FONT color="green">059</FONT>              * allows for Features identically placed but with different<a name="line.59"></a>
+<FONT color="green">060</FONT>              * attributes to coexist in a Track.  Thus if two Features exist<a name="line.60"></a>
+<FONT color="green">061</FONT>              * at the exact same location on a sequence, this flag will<a name="line.61"></a>
+<FONT color="green">062</FONT>              * determine whether the attributes field will be used when<a name="line.62"></a>
+<FONT color="green">063</FONT>              * deciding if these are in fact the same Feature.<a name="line.63"></a>
+<FONT color="green">064</FONT>              */<a name="line.64"></a>
+<FONT color="green">065</FONT>             private static boolean IGNORE_ATTRIBUTES = GloDBMain.userDefaults.getBoolean("IGNORE_ATTRIBUTES", <a name="line.65"></a>
+<FONT color="green">066</FONT>                                                                                                                                                                                                                     false);<a name="line.66"></a>
+<FONT color="green">067</FONT>    <a name="line.67"></a>
+<FONT color="green">068</FONT>             /**<a name="line.68"></a>
+<FONT color="green">069</FONT>              * If not null, all error and warning messages will be sent here.<a name="line.69"></a>
+<FONT color="green">070</FONT>              * This messages panel can be disabled by setting the value to null.<a name="line.70"></a>
+<FONT color="green">071</FONT>              * When disabled, all messages printed will be sent to stderr,<a name="line.71"></a>
+<FONT color="green">072</FONT>              * which will effectively display them in the console.<a name="line.72"></a>
+<FONT color="green">073</FONT>              */<a name="line.73"></a>
+<FONT color="green">074</FONT>             public static JTextArea guiMessages = null;<a name="line.74"></a>
+<FONT color="green">075</FONT>    <a name="line.75"></a>
+<FONT color="green">076</FONT>        //--------------------------------------------------------------------------<a name="line.76"></a>
+<FONT color="green">077</FONT>        // Getters and Setters<a name="line.77"></a>
+<FONT color="green">078</FONT>    <a name="line.78"></a>
+<FONT color="green">079</FONT>             /** Set the VERBOSE flag. */<a name="line.79"></a>
+<FONT color="green">080</FONT>        public static void setVerbose(int verbose) { <a name="line.80"></a>
+<FONT color="green">081</FONT>                      VERBOSE = verbose; <a name="line.81"></a>
+<FONT color="green">082</FONT>                      GloDBMain.userDefaults.putInt("VERBOSE", verbose);<a name="line.82"></a>
+<FONT color="green">083</FONT>             }<a name="line.83"></a>
+<FONT color="green">084</FONT>    <a name="line.84"></a>
+<FONT color="green">085</FONT>             /** Get the VERBOSE flag. */<a name="line.85"></a>
+<FONT color="green">086</FONT>        public static int getVerbose() { return VERBOSE; }<a name="line.86"></a>
+<FONT color="green">087</FONT>    <a name="line.87"></a>
+<FONT color="green">088</FONT>             /** Set the IGNORE_ATTRIBUTES flag. */<a name="line.88"></a>
+<FONT color="green">089</FONT>        public static void setIgnoreAttributes(boolean ignoreAttributes) { <a name="line.89"></a>
+<FONT color="green">090</FONT>                      IGNORE_ATTRIBUTES = ignoreAttributes; <a name="line.90"></a>
+<FONT color="green">091</FONT>                      GloDBMain.userDefaults.putBoolean("IGNORE_ATTRIBUTES", ignoreAttributes);<a name="line.91"></a>
+<FONT color="green">092</FONT>                      String msg = "Changing IGNORE_ATTIBUTES will not affect the features already loaded \n";<a name="line.92"></a>
+<FONT color="green">093</FONT>                      msg += "into tracks but will affect any new features added.";<a name="line.93"></a>
+<FONT color="green">094</FONT>                      printMsg(msg, WARNING);<a name="line.94"></a>
+<FONT color="green">095</FONT>             }<a name="line.95"></a>
+<FONT color="green">096</FONT>    <a name="line.96"></a>
+<FONT color="green">097</FONT>             /** Get the IGNORE_ATTRIBUTES flag. */<a name="line.97"></a>
+<FONT color="green">098</FONT>        public static boolean ignoreAttributes() { return IGNORE_ATTRIBUTES; }<a name="line.98"></a>
+<FONT color="green">099</FONT>    <a name="line.99"></a>
+<FONT color="green">100</FONT>        //--------------------------------------------------------------------------<a name="line.100"></a>
+<FONT color="green">101</FONT>        // Miscellaneous Methods<a name="line.101"></a>
+<FONT color="green">102</FONT>       <a name="line.102"></a>
+<FONT color="green">103</FONT>             /** Returns true if 'str' is empty (ignores spaces) or null. */<a name="line.103"></a>
+<FONT color="green">104</FONT>             public static boolean isEmpty(String str) {<a name="line.104"></a>
+<FONT color="green">105</FONT>                      if ((str == null) || (str.trim().length() == 0)) return true;<a name="line.105"></a>
+<FONT color="green">106</FONT>                      else return false;<a name="line.106"></a>
+<FONT color="green">107</FONT>             }<a name="line.107"></a>
+<FONT color="green">108</FONT>    <a name="line.108"></a>
+<FONT color="green">109</FONT>             /** RE-set GloDB user defaults.  */<a name="line.109"></a>
+<FONT color="green">110</FONT>        public static void resetGloDBDefaults() { <a name="line.110"></a>
+<FONT color="green">111</FONT>                      setVerbose(1);<a name="line.111"></a>
+<FONT color="green">112</FONT>                      setIgnoreAttributes(false);<a name="line.112"></a>
+<FONT color="green">113</FONT>             }<a name="line.113"></a>
+<FONT color="green">114</FONT>    <a name="line.114"></a>
+<FONT color="green">115</FONT>             /**<a name="line.115"></a>
+<FONT color="green">116</FONT>              * Convert from the integer constant value to a string equivalent.<a name="line.116"></a>
+<FONT color="green">117</FONT>              */<a name="line.117"></a>
+<FONT color="green">118</FONT>             public static String convertConstant(int val) {<a name="line.118"></a>
+<FONT color="green">119</FONT>                      switch (val) {<a name="line.119"></a>
+<FONT color="green">120</FONT>                      case TRACK: return "Track";<a name="line.120"></a>
+<FONT color="green">121</FONT>                      case SEQUENCE: return "Sequence";<a name="line.121"></a>
+<FONT color="green">122</FONT>                      case FEATURE: return "Feature";<a name="line.122"></a>
+<FONT color="green">123</FONT>                      }<a name="line.123"></a>
+<FONT color="green">124</FONT>                      return "";<a name="line.124"></a>
+<FONT color="green">125</FONT>             }<a name="line.125"></a>
+<FONT color="green">126</FONT>    <a name="line.126"></a>
+<FONT color="green">127</FONT>        /** Get the class name without any package info. */<a name="line.127"></a>
+<FONT color="green">128</FONT>             public static String getClassName(Object o) {<a name="line.128"></a>
+<FONT color="green">129</FONT>            String classString = o.getClass().getName();<a name="line.129"></a>
+<FONT color="green">130</FONT>            int dotIndex = classString.lastIndexOf(".");<a name="line.130"></a>
+<FONT color="green">131</FONT>            return classString.substring(dotIndex+1);<a name="line.131"></a>
+<FONT color="green">132</FONT>        }<a name="line.132"></a>
+<FONT color="green">133</FONT>    <a name="line.133"></a>
+<FONT color="green">134</FONT>             public static byte[] compressString(String val) {<a name="line.134"></a>
+<FONT color="green">135</FONT>                      byte[] bVal = val.getBytes();<a name="line.135"></a>
+<FONT color="green">136</FONT>        <a name="line.136"></a>
+<FONT color="green">137</FONT>                      // Create the compressor with highest level of compression<a name="line.137"></a>
+<FONT color="green">138</FONT>                      Deflater compressor = new Deflater();<a name="line.138"></a>
+<FONT color="green">139</FONT>                      compressor.setLevel(Deflater.BEST_SPEED);<a name="line.139"></a>
+<FONT color="green">140</FONT>                      <a name="line.140"></a>
+<FONT color="green">141</FONT>                      // Give the compressor the data to compress<a name="line.141"></a>
+<FONT color="green">142</FONT>                      compressor.setInput(bVal);<a name="line.142"></a>
+<FONT color="green">143</FONT>                      compressor.finish();<a name="line.143"></a>
+<FONT color="green">144</FONT>                      <a name="line.144"></a>
+<FONT color="green">145</FONT>                      // Create an expandable byte array to hold the compressed data.<a name="line.145"></a>
+<FONT color="green">146</FONT>                      // You cannot use an array that's the same size as the orginal because<a name="line.146"></a>
+<FONT color="green">147</FONT>                      // there is no guarantee that the compressed data will be smaller than<a name="line.147"></a>
+<FONT color="green">148</FONT>                      // the uncompressed data.<a name="line.148"></a>
+<FONT color="green">149</FONT>                      ByteArrayOutputStream bos = new ByteArrayOutputStream(val.length());<a name="line.149"></a>
+<FONT color="green">150</FONT>                      <a name="line.150"></a>
+<FONT color="green">151</FONT>                      // Compress the data<a name="line.151"></a>
+<FONT color="green">152</FONT>                      byte[] buf = new byte[2048];<a name="line.152"></a>
+<FONT color="green">153</FONT>                      while (!compressor.finished()) {<a name="line.153"></a>
+<FONT color="green">154</FONT>                                    int count = compressor.deflate(buf);<a name="line.154"></a>
+<FONT color="green">155</FONT>                                    bos.write(buf, 0, count);<a name="line.155"></a>
+<FONT color="green">156</FONT>                      }<a name="line.156"></a>
+<FONT color="green">157</FONT>                      try {<a name="line.157"></a>
+<FONT color="green">158</FONT>                                    bos.close();<a name="line.158"></a>
+<FONT color="green">159</FONT>                      } catch (Exception e) { System.err.println(e); }<a name="line.159"></a>
+<FONT color="green">160</FONT>                      <a name="line.160"></a>
+<FONT color="green">161</FONT>                      return bos.toByteArray();<a name="line.161"></a>
+<FONT color="green">162</FONT>             }<a name="line.162"></a>
+<FONT color="green">163</FONT>    <a name="line.163"></a>
+<FONT color="green">164</FONT>             public static String uncompressString(byte[] compressedData) {<a name="line.164"></a>
+<FONT color="green">165</FONT>                      // Create the decompressor and give it the data to compress<a name="line.165"></a>
+<FONT color="green">166</FONT>                      Inflater decompressor = new Inflater();<a name="line.166"></a>
+<FONT color="green">167</FONT>                      decompressor.setInput(compressedData);<a name="line.167"></a>
+<FONT color="green">168</FONT>                      <a name="line.168"></a>
+<FONT color="green">169</FONT>                      // Create an expandable byte array to hold the decompressed data<a name="line.169"></a>
+<FONT color="green">170</FONT>                      ByteArrayOutputStream bos = new ByteArrayOutputStream(compressedData.length);<a name="line.170"></a>
+<FONT color="green">171</FONT>                      <a name="line.171"></a>
+<FONT color="green">172</FONT>                      // Decompress the data<a name="line.172"></a>
+<FONT color="green">173</FONT>                      byte[] buf = new byte[1024];<a name="line.173"></a>
+<FONT color="green">174</FONT>                      while (!decompressor.finished()) {<a name="line.174"></a>
+<FONT color="green">175</FONT>                                    try {<a name="line.175"></a>
+<FONT color="green">176</FONT>                                             int count = decompressor.inflate(buf);<a name="line.176"></a>
+<FONT color="green">177</FONT>                                             bos.write(buf, 0, count);<a name="line.177"></a>
+<FONT color="green">178</FONT>                                    } catch (Exception e) { System.err.println(e); }<a name="line.178"></a>
+<FONT color="green">179</FONT>                      }<a name="line.179"></a>
+<FONT color="green">180</FONT>                      try {<a name="line.180"></a>
+<FONT color="green">181</FONT>                                    bos.close();<a name="line.181"></a>
+<FONT color="green">182</FONT>                      } catch (Exception e) { System.err.println(e); }<a name="line.182"></a>
+<FONT color="green">183</FONT>                      <a name="line.183"></a>
+<FONT color="green">184</FONT>                      return bos.toString();<a name="line.184"></a>
+<FONT color="green">185</FONT>             }<a name="line.185"></a>
+<FONT color="green">186</FONT>    <a name="line.186"></a>
+<FONT color="green">187</FONT>             /** Display the message to either the gui or stderr. */<a name="line.187"></a>
+<FONT color="green">188</FONT>             public static void printMsg(String msg) { printMsg(msg, 0, true); }<a name="line.188"></a>
+<FONT color="green">189</FONT>    <a name="line.189"></a>
+<FONT color="green">190</FONT>             /** Display the message to either the gui or stderr. */<a name="line.190"></a>
+<FONT color="green">191</FONT>             public static void printMsg(String msg, int type) { printMsg(msg, type, true); }<a name="line.191"></a>
+<FONT color="green">192</FONT>    <a name="line.192"></a>
+<FONT color="green">193</FONT>             /** Display the message to either the gui or stderr. */<a name="line.193"></a>
+<FONT color="green">194</FONT>             public static void printMsg(String msg, boolean newline) { printMsg(msg, 0, newline); }<a name="line.194"></a>
+<FONT color="green">195</FONT>    <a name="line.195"></a>
+<FONT color="green">196</FONT>             /** Display the error message to either the gui or stderr. */<a name="line.196"></a>
+<FONT color="green">197</FONT>             public static void printError(String msg) { printMsg(msg, ERROR, true); }<a name="line.197"></a>
+<FONT color="green">198</FONT>    <a name="line.198"></a>
+<FONT color="green">199</FONT>             /** Display the warning message to either the gui or stderr. */<a name="line.199"></a>
+<FONT color="green">200</FONT>             public static void printWarning(String msg) { printMsg(msg, WARNING, true); }<a name="line.200"></a>
+<FONT color="green">201</FONT>    <a name="line.201"></a>
+<FONT color="green">202</FONT>             /**<a name="line.202"></a>
+<FONT color="green">203</FONT>              * Display the message to either the gui or stderr.  The message<a name="line.203"></a>
+<FONT color="green">204</FONT>              * type can be set which will add the appropriate label to the<a name="line.204"></a>
+<FONT color="green">205</FONT>              * message (1 = warning, 2 = error).  <a name="line.205"></a>
+<FONT color="green">206</FONT>              */<a name="line.206"></a>
+<FONT color="green">207</FONT>             public static void printMsg(String msg, int type, boolean newline) {<a name="line.207"></a>
+<FONT color="green">208</FONT>                      // if VERBOSE = 0, then don't print any messages<a name="line.208"></a>
+<FONT color="green">209</FONT>                      if (VERBOSE == 0) return;<a name="line.209"></a>
+<FONT color="green">210</FONT>    <a name="line.210"></a>
+<FONT color="green">211</FONT>                      // add appropriate message label<a name="line.211"></a>
+<FONT color="green">212</FONT>                      switch (type) {<a name="line.212"></a>
+<FONT color="green">213</FONT>                      case FEEDBACK: <a name="line.213"></a>
+<FONT color="green">214</FONT>                                    if (VERBOSE &lt; 2) return;<a name="line.214"></a>
+<FONT color="green">215</FONT>                                    break;<a name="line.215"></a>
+<FONT color="green">216</FONT>                      case WARNING: <a name="line.216"></a>
+<FONT color="green">217</FONT>                                    if (VERBOSE &lt; 2) return;<a name="line.217"></a>
+<FONT color="green">218</FONT>                                    msg = " * WARNING: " + msg; <a name="line.218"></a>
+<FONT color="green">219</FONT>                                    break;<a name="line.219"></a>
+<FONT color="green">220</FONT>                      case ERROR: <a name="line.220"></a>
+<FONT color="green">221</FONT>                                    if (VERBOSE &lt; 1) return;<a name="line.221"></a>
+<FONT color="green">222</FONT>                                    msg = " ** ERROR: " + msg; <a name="line.222"></a>
+<FONT color="green">223</FONT>                                    Toolkit.getDefaultToolkit().beep();<a name="line.223"></a>
+<FONT color="green">224</FONT>                                    break;<a name="line.224"></a>
+<FONT color="green">225</FONT>                      //              default: msg = " " + msg;<a name="line.225"></a>
+<FONT color="green">226</FONT>                      }<a name="line.226"></a>
+<FONT color="green">227</FONT>    <a name="line.227"></a>
+<FONT color="green">228</FONT>                      if (newline) msg += "\n";<a name="line.228"></a>
+<FONT color="green">229</FONT>    <a name="line.229"></a>
+<FONT color="green">230</FONT>                      if (guiMessages == null) System.err.print(msg);<a name="line.230"></a>
+<FONT color="green">231</FONT>                      else guiMessages.append(msg);<a name="line.231"></a>
+<FONT color="green">232</FONT>             }<a name="line.232"></a>
+<FONT color="green">233</FONT>    <a name="line.233"></a>
+<FONT color="green">234</FONT>    } // GloDBUtils.java<a name="line.234"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

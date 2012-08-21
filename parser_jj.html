@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<TITLE>BNF for Parser.jj</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=CENTER>BNF for Parser.jj</H1>
+<H2 ALIGN=CENTER>NON-TERMINALS</H2>
+<TABLE>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod1">parseLine</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod2">trackAssign</A> ) <A HREF="#prod3">expr</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod2">trackAssign</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;ASSIGN&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod3">expr</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">track</A> ( <A HREF="#prod5">opExpr</A> )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod5">opExpr</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod6">operator</A> | <A HREF="#prod7">position</A> ( &lt;lREPEAT&gt; <A HREF="#prod8">nValue</A> ( &lt;SEPARATOR&gt; <A HREF="#prod8">nValue</A> )? &lt;rREPEAT&gt; | <A HREF="#prod9">oRepeat</A> )? ) <A HREF="#prod4">track</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod4">track</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod10">ignore</A> )? ( <A HREF="#prod11">negate</A> )? ( <A HREF="#prod12">group</A> | <A HREF="#prod13">feature</A> ) ( <A HREF="#prod14">densityRepeat</A> | <A HREF="#prod15">operatorRepeat</A> | <A HREF="#prod16">length</A> | <A HREF="#prod17">sequence</A> )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod12">group</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;lGROUP&gt; <A HREF="#prod3">expr</A> &lt;rGROUP&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod13">feature</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod18">allTracks</A> | <A HREF="#prod19">trackRef</A> )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod14">densityRepeat</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;lREPEAT&gt; <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? ( ";" <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? )? &lt;rREPEAT&gt; | &lt;REPEATED&gt; <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? ( &lt;TIMES&gt; )? ( &lt;WITHIN&gt; <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? ( &lt;POSITIONS&gt; )? )? )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod15">operatorRepeat</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod9">oRepeat</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod16">length</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;lLENGTH2&gt; <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? &lt;rLENGTH&gt; | &lt;lLENGTH&gt; <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? ( ";" <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? )? &lt;rLENGTH&gt; | &lt;LENGTH&gt; <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? ( &lt;FROM&gt; <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? )? | &lt;FROM&gt; <A HREF="#prod20">value</A> ( &lt;SEPARATOR&gt; <A HREF="#prod20">value</A> )? )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod17">sequence</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod21">sequenceRef</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod18">allTracks</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;allTRACKS&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod19">trackRef</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;TRACK&gt; )? &lt;OBJECT&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod7">position</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;POS&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod21">sequenceRef</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;SEQUENCE&gt; &lt;OBJECT&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod10">ignore</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;IGNORE&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod11">negate</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;bNOT&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod6">operator</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;AND&gt; | &lt;OR&gt; | &lt;MINUS&gt; | &lt;sAND&gt; | &lt;sMINUS&gt; | &lt;bAND&gt; | &lt;bOR&gt; | &lt;bMINUS&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod9">oRepeat</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;HOOK&gt; | &lt;PLUS&gt; | &lt;STAR&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod20">value</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;INTEGER&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod8">nValue</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;INTEGER&gt; | &lt;nINTEGER&gt; )</TD>
+</TR>
+</TABLE>
+</BODY>
+</HTML>

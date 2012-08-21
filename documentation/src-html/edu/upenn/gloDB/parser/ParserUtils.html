@@ -1,0 +1,369 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright 2007, 2012 Stephen Fisher and Junhyong Kim, University of<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Pennsylvania.<a name="line.3"></a>
+<FONT color="green">004</FONT>     *<a name="line.4"></a>
+<FONT color="green">005</FONT>     * This file is part of Glo-DB.<a name="line.5"></a>
+<FONT color="green">006</FONT>     * <a name="line.6"></a>
+<FONT color="green">007</FONT>     * Glo-DB is free software: you can redistribute it and/or modify it<a name="line.7"></a>
+<FONT color="green">008</FONT>     * under the terms of the GNU General Public License as published by<a name="line.8"></a>
+<FONT color="green">009</FONT>     * the Free Software Foundation, either version 3 of the License, or<a name="line.9"></a>
+<FONT color="green">010</FONT>     * (at your option) any later version.<a name="line.10"></a>
+<FONT color="green">011</FONT>     * <a name="line.11"></a>
+<FONT color="green">012</FONT>     * Glo-DB is distributed in the hope that it will be useful, but<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.13"></a>
+<FONT color="green">014</FONT>     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU<a name="line.14"></a>
+<FONT color="green">015</FONT>     * General Public License for more details.<a name="line.15"></a>
+<FONT color="green">016</FONT>     * <a name="line.16"></a>
+<FONT color="green">017</FONT>     * You should have received a copy of the GNU General Public License<a name="line.17"></a>
+<FONT color="green">018</FONT>     * along with Glo-DB. If not, see &lt;http://www.gnu.org/licenses/&gt;.<a name="line.18"></a>
+<FONT color="green">019</FONT>     *<a name="line.19"></a>
+<FONT color="green">020</FONT>     * @(#)ParserUtils.java<a name="line.20"></a>
+<FONT color="green">021</FONT>     */<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    package edu.upenn.gloDB.parser;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    import edu.upenn.gloDB.*;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.util.HashMap;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.util.TreeSet;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.util.ArrayList;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.util.Iterator;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import java.io.StringReader;<a name="line.30"></a>
+<FONT color="green">031</FONT>    <a name="line.31"></a>
+<FONT color="green">032</FONT>    /**<a name="line.32"></a>
+<FONT color="green">033</FONT>     * Methods to process the Operations ArrayList produced by the parser.<a name="line.33"></a>
+<FONT color="green">034</FONT>     *<a name="line.34"></a>
+<FONT color="green">035</FONT>     * @author  Stephen Fisher<a name="line.35"></a>
+<FONT color="green">036</FONT>     * @version $Id: ParserUtils.java,v 1.46.2.21 2007/03/01 21:17:33 fisher Exp $<a name="line.36"></a>
+<FONT color="green">037</FONT>     */<a name="line.37"></a>
+<FONT color="green">038</FONT>    <a name="line.38"></a>
+<FONT color="green">039</FONT>    public class ParserUtils {<a name="line.39"></a>
+<FONT color="green">040</FONT>    <a name="line.40"></a>
+<FONT color="green">041</FONT>             public static boolean debug = false;<a name="line.41"></a>
+<FONT color="green">042</FONT>             public static boolean debugSolveAll = false;<a name="line.42"></a>
+<FONT color="green">043</FONT>             public static boolean debugSolveOps = false;<a name="line.43"></a>
+<FONT color="green">044</FONT>    <a name="line.44"></a>
+<FONT color="green">045</FONT>        //--------------------------------------------------------------------------<a name="line.45"></a>
+<FONT color="green">046</FONT>        // Miscellaneous Methods<a name="line.46"></a>
+<FONT color="green">047</FONT>    <a name="line.47"></a>
+<FONT color="green">048</FONT>             /**<a name="line.48"></a>
+<FONT color="green">049</FONT>              * This will parse the input string to create the operations<a name="line.49"></a>
+<FONT color="green">050</FONT>              * array, then compute the operations and assign the results to<a name="line.50"></a>
+<FONT color="green">051</FONT>              * the Track indicated.  If the Track already exists, it will be<a name="line.51"></a>
+<FONT color="green">052</FONT>              * overwritten.<a name="line.52"></a>
+<FONT color="green">053</FONT>              * @XXX For now, trackPool and sequencePool are used as the Track<a name="line.53"></a>
+<FONT color="green">054</FONT>              * and Sequence sets.  These should be options that the user can<a name="line.54"></a>
+<FONT color="green">055</FONT>              * set within the parse string.  Within the parser they are used<a name="line.55"></a>
+<FONT color="green">056</FONT>              * to determine if a Track or Sequence object is valid and are<a name="line.56"></a>
+<FONT color="green">057</FONT>              * used as the set of all Tracks for the "__T" parser option.<a name="line.57"></a>
+<FONT color="green">058</FONT>              */<a name="line.58"></a>
+<FONT color="green">059</FONT>             public static Track compute(String parse) {<a name="line.59"></a>
+<FONT color="green">060</FONT>                      Parser parser = new Parser(new StringReader(parse));<a name="line.60"></a>
+<FONT color="green">061</FONT>                      ArrayList ops;<a name="line.61"></a>
+<FONT color="green">062</FONT>    <a name="line.62"></a>
+<FONT color="green">063</FONT>                      try {<a name="line.63"></a>
+<FONT color="green">064</FONT>                                    // create the array of operations<a name="line.64"></a>
+<FONT color="green">065</FONT>                                    ops = parser.run(ObjectHandles.trackPool, ObjectHandles.sequencePool);<a name="line.65"></a>
+<FONT color="green">066</FONT>                      } catch (ParseException e) {<a name="line.66"></a>
+<FONT color="green">067</FONT>                                    if (e.getMessage() == null) {<a name="line.67"></a>
+<FONT color="green">068</FONT>                                             GloDBUtils.printError("Invalid expression.  String can not be solved.");<a name="line.68"></a>
+<FONT color="green">069</FONT>                                    } else {<a name="line.69"></a>
+<FONT color="green">070</FONT>                                             GloDBUtils.printError("Invalid expression. " + e.getMessage());<a name="line.70"></a>
+<FONT color="green">071</FONT>                                    }<a name="line.71"></a>
+<FONT color="green">072</FONT>                                    return null;<a name="line.72"></a>
+<FONT color="green">073</FONT>                      } catch (TokenMgrError e) {<a name="line.73"></a>
+<FONT color="green">074</FONT>                                    if (e.getMessage() == null) {<a name="line.74"></a>
+<FONT color="green">075</FONT>                                             GloDBUtils.printError("Invalid expression.  String can not be solved.");<a name="line.75"></a>
+<FONT color="green">076</FONT>                                    } else {<a name="line.76"></a>
+<FONT color="green">077</FONT>                                             GloDBUtils.printError("Invalid expression. " + e.getMessage());<a name="line.77"></a>
+<FONT color="green">078</FONT>                                    }<a name="line.78"></a>
+<FONT color="green">079</FONT>                                    return null;<a name="line.79"></a>
+<FONT color="green">080</FONT>                      }<a name="line.80"></a>
+<FONT color="green">081</FONT>    <a name="line.81"></a>
+<FONT color="green">082</FONT>                      // not sure if this will ever happen<a name="line.82"></a>
+<FONT color="green">083</FONT>                      if (ops == null) return null;<a name="line.83"></a>
+<FONT color="green">084</FONT>    <a name="line.84"></a>
+<FONT color="green">085</FONT>                      // get the id for the assignment track<a name="line.85"></a>
+<FONT color="green">086</FONT>                      String id = parser.getId();<a name="line.86"></a>
+<FONT color="green">087</FONT>    <a name="line.87"></a>
+<FONT color="green">088</FONT>                      Track track;<a name="line.88"></a>
+<FONT color="green">089</FONT>                      if (ObjectHandles.trackPool.containsKey(id)) {<a name="line.89"></a>
+<FONT color="green">090</FONT>                                    // warn user if 'id' is being overwritten<a name="line.90"></a>
+<FONT color="green">091</FONT>                                    GloDBUtils.printMsg("Track \"" + id + "\" already existed and has been overwritten.", <a name="line.91"></a>
+<FONT color="green">092</FONT>                                                                            GloDBUtils.WARNING);<a name="line.92"></a>
+<FONT color="green">093</FONT>    <a name="line.93"></a>
+<FONT color="green">094</FONT>                                    // get the existing Track object and erase its attributes<a name="line.94"></a>
+<FONT color="green">095</FONT>                                    track = ObjectHandles.getTrack(id);<a name="line.95"></a>
+<FONT color="green">096</FONT>                                    track.erase();<a name="line.96"></a>
+<FONT color="green">097</FONT>    <a name="line.97"></a>
+<FONT color="green">098</FONT>                                    // XXX this is inefficient but will retain any links to<a name="line.98"></a>
+<FONT color="green">099</FONT>                                    // the existing Track that the user might already have<a name="line.99"></a>
+<FONT color="green">100</FONT>                                    track.setFeatures(solveOpsRecurse(ops).getFeatures());<a name="line.100"></a>
+<FONT color="green">101</FONT>                      } else {<a name="line.101"></a>
+<FONT color="green">102</FONT>                                    track = solveOpsRecurse(ops);<a name="line.102"></a>
+<FONT color="green">103</FONT>    <a name="line.103"></a>
+<FONT color="green">104</FONT>                                    // add output Track to set of all Track<a name="line.104"></a>
+<FONT color="green">105</FONT>                                    ObjectHandles.addTrack(track);<a name="line.105"></a>
+<FONT color="green">106</FONT>    <a name="line.106"></a>
+<FONT color="green">107</FONT>                                    // need to set the Track ID.  This will also add the Track<a name="line.107"></a>
+<FONT color="green">108</FONT>                                    // to ObjectHandles.trackPool<a name="line.108"></a>
+<FONT color="green">109</FONT>                                    try { track.setID(id); }<a name="line.109"></a>
+<FONT color="green">110</FONT>                                    catch (InvalidIDException e) { <a name="line.110"></a>
+<FONT color="green">111</FONT>                                            track.setID(Track.randomID("_" + id + "_"));<a name="line.111"></a>
+<FONT color="green">112</FONT>                                    }<a name="line.112"></a>
+<FONT color="green">113</FONT>                      }<a name="line.113"></a>
+<FONT color="green">114</FONT>    <a name="line.114"></a>
+<FONT color="green">115</FONT>                      return track;<a name="line.115"></a>
+<FONT color="green">116</FONT>             }<a name="line.116"></a>
+<FONT color="green">117</FONT>    <a name="line.117"></a>
+<FONT color="green">118</FONT>             /**<a name="line.118"></a>
+<FONT color="green">119</FONT>              * This will run solveOpsRecurse() which will recursively solve<a name="line.119"></a>
+<FONT color="green">120</FONT>              * the Operations in the ArrayList 'ops'.  This wrapper will make<a name="line.120"></a>
+<FONT color="green">121</FONT>              * sure the output Track is added to the trackPool.  The temporary<a name="line.121"></a>
+<FONT color="green">122</FONT>              * Tracks created along the way are not added to the trackPool.<a name="line.122"></a>
+<FONT color="green">123</FONT>             */<a name="line.123"></a>
+<FONT color="green">124</FONT>             public static Track solveOps(ArrayList ops) {<a name="line.124"></a>
+<FONT color="green">125</FONT>                      return solveOps(ops, "");<a name="line.125"></a>
+<FONT color="green">126</FONT>             }<a name="line.126"></a>
+<FONT color="green">127</FONT>    <a name="line.127"></a>
+<FONT color="green">128</FONT>             /**<a name="line.128"></a>
+<FONT color="green">129</FONT>              * This will run solveOpsRecurse() which will recursively solve<a name="line.129"></a>
+<FONT color="green">130</FONT>              * the Operations in the ArrayList 'ops'.  This wrapper will make<a name="line.130"></a>
+<FONT color="green">131</FONT>              * sure the output Track is added to the trackPool.  The temporary<a name="line.131"></a>
+<FONT color="green">132</FONT>              * Tracks created along the way are not added to the trackPool.<a name="line.132"></a>
+<FONT color="green">133</FONT>              * The 'id' will be used as the output Track ID.<a name="line.133"></a>
+<FONT color="green">134</FONT>             */<a name="line.134"></a>
+<FONT color="green">135</FONT>             public static Track solveOps(ArrayList ops, String id) {<a name="line.135"></a>
+<FONT color="green">136</FONT>                      if (ops == null) return null;<a name="line.136"></a>
+<FONT color="green">137</FONT>    <a name="line.137"></a>
+<FONT color="green">138</FONT>                      // get output as a Track<a name="line.138"></a>
+<FONT color="green">139</FONT>                      Track out = solveOpsRecurse(ops);<a name="line.139"></a>
+<FONT color="green">140</FONT>                      <a name="line.140"></a>
+<FONT color="green">141</FONT>                      // add output Track to trackPool.  if ID already exists, then<a name="line.141"></a>
+<FONT color="green">142</FONT>                      // add a random tag to the ID.  if ID is blank then add the<a name="line.142"></a>
+<FONT color="green">143</FONT>                      // Track to trackPool and don't change the ID.<a name="line.143"></a>
+<FONT color="green">144</FONT>                      if (id == "") {<a name="line.144"></a>
+<FONT color="green">145</FONT>                                    // add output Track to set of all Track<a name="line.145"></a>
+<FONT color="green">146</FONT>                                    ObjectHandles.addTrack(out);<a name="line.146"></a>
+<FONT color="green">147</FONT>                      } else {<a name="line.147"></a>
+<FONT color="green">148</FONT>                                    try { out.setID(id); }<a name="line.148"></a>
+<FONT color="green">149</FONT>                                    catch (InvalidIDException e) { <a name="line.149"></a>
+<FONT color="green">150</FONT>                                             out.setID(Track.randomID("_" + id + "_"));<a name="line.150"></a>
+<FONT color="green">151</FONT>                                    }<a name="line.151"></a>
+<FONT color="green">152</FONT>                      }<a name="line.152"></a>
+<FONT color="green">153</FONT>    <a name="line.153"></a>
+<FONT color="green">154</FONT>                      return out;<a name="line.154"></a>
+<FONT color="green">155</FONT>             }<a name="line.155"></a>
+<FONT color="green">156</FONT>    <a name="line.156"></a>
+<FONT color="green">157</FONT>             /**<a name="line.157"></a>
+<FONT color="green">158</FONT>              * This will solve the Operations in the ArrayList 'ops', calling<a name="line.158"></a>
+<FONT color="green">159</FONT>              * itself to recursively resolve groups of Operations.<a name="line.159"></a>
+<FONT color="green">160</FONT>             */<a name="line.160"></a>
+<FONT color="green">161</FONT>             private static Track solveOpsRecurse(ArrayList ops) {<a name="line.161"></a>
+<FONT color="green">162</FONT>                      if (ops == null) return null;<a name="line.162"></a>
+<FONT color="green">163</FONT>    <a name="line.163"></a>
+<FONT color="green">164</FONT>                      // the output set of Tracks, initialized to the left hand side<a name="line.164"></a>
+<FONT color="green">165</FONT>                      // of the Operator or set of Operators.<a name="line.165"></a>
+<FONT color="green">166</FONT>                      Operation operation = getOperation((Operation) ops.get(0));<a name="line.166"></a>
+<FONT color="green">167</FONT>    <a name="line.167"></a>
+<FONT color="green">168</FONT>                      // start out with a copy of the initial Track.  This will<a name="line.168"></a>
+<FONT color="green">169</FONT>                      // serve as the left side of the next Operation.  <a name="line.169"></a>
+<FONT color="green">170</FONT>                      <a name="line.170"></a>
+<FONT color="green">171</FONT>                      // XXX by cloning the Track, we don't change the original<a name="line.171"></a>
+<FONT color="green">172</FONT>                      // Operation, allowing this array of Operations to be solved<a name="line.172"></a>
+<FONT color="green">173</FONT>                      // again.  Since the Operation already has a cloned Track,<a name="line.173"></a>
+<FONT color="green">174</FONT>                      // the usefullness of this may not outway the computational<a name="line.174"></a>
+<FONT color="green">175</FONT>                      // cost.<a name="line.175"></a>
+<FONT color="green">176</FONT>                      Track out = (Track) operation.track.cloneTrack(false);<a name="line.176"></a>
+<FONT color="green">177</FONT>    <a name="line.177"></a>
+<FONT color="green">178</FONT>                      // loop through all Operations<a name="line.178"></a>
+<FONT color="green">179</FONT>                      for (int i = 1; i &lt; ops.size(); i++) {<a name="line.179"></a>
+<FONT color="green">180</FONT>                                    operation = getOperation((Operation) ops.get(i));<a name="line.180"></a>
+<FONT color="green">181</FONT>    <a name="line.181"></a>
+<FONT color="green">182</FONT>                                    if (debugSolveOps) System.out.println("Operation : " + i);<a name="line.182"></a>
+<FONT color="green">183</FONT>                                    if (debugSolveOps) System.out.println("Op type: " + operation.getType());<a name="line.183"></a>
+<FONT color="green">184</FONT>    <a name="line.184"></a>
+<FONT color="green">185</FONT>                                    out = Operator.processOperation(out, operation);<a name="line.185"></a>
+<FONT color="green">186</FONT>    <a name="line.186"></a>
+<FONT color="green">187</FONT>                                    if (debugSolveOps) System.out.println(out);<a name="line.187"></a>
+<FONT color="green">188</FONT>                      }<a name="line.188"></a>
+<FONT color="green">189</FONT>    <a name="line.189"></a>
+<FONT color="green">190</FONT>                      return out;<a name="line.190"></a>
+<FONT color="green">191</FONT>             }<a name="line.191"></a>
+<FONT color="green">192</FONT>    <a name="line.192"></a>
+<FONT color="green">193</FONT>             /**<a name="line.193"></a>
+<FONT color="green">194</FONT>              * For Operations that contain groups, this will solve the group<a name="line.194"></a>
+<FONT color="green">195</FONT>              * and store the resulting TreeSet of Tracks in the Operation.<a name="line.195"></a>
+<FONT color="green">196</FONT>              * This will be called recursively if there are nested groups.<a name="line.196"></a>
+<FONT color="green">197</FONT>              */<a name="line.197"></a>
+<FONT color="green">198</FONT>             private static Operation getOperation(Operation operation) {<a name="line.198"></a>
+<FONT color="green">199</FONT>                      //              if (operation.track == null) {<a name="line.199"></a>
+<FONT color="green">200</FONT>                      if (operation.isGroup()) {<a name="line.200"></a>
+<FONT color="green">201</FONT>                                    if (debug) System.out.println("** FOUND NESTED GROUP **");<a name="line.201"></a>
+<FONT color="green">202</FONT>                                    <a name="line.202"></a>
+<FONT color="green">203</FONT>                                    // 'solved' will contain ALL matches and EACH match will<a name="line.203"></a>
+<FONT color="green">204</FONT>                                    // be a Track, the collection of Tracks is the new<a name="line.204"></a>
+<FONT color="green">205</FONT>                                    // value of "operation.track".  These Tracks are not<a name="line.205"></a>
+<FONT color="green">206</FONT>                                    // in ObjectHandle.trackPool.<a name="line.206"></a>
+<FONT color="green">207</FONT>                                    operation.track = solveOpsRecurse(operation.getGroup());<a name="line.207"></a>
+<FONT color="green">208</FONT>                                    if (operation.track != null) { // add the set of Tracks to the Operation.  <a name="line.208"></a>
+<FONT color="green">209</FONT>                                             // perform length and seqPos filters<a name="line.209"></a>
+<FONT color="green">210</FONT>                                             //                                      operation.filterOnLength();<a name="line.210"></a>
+<FONT color="green">211</FONT>                                             operation.filterOnLength();<a name="line.211"></a>
+<FONT color="green">212</FONT>                                             operation.filterOnSeqPos();<a name="line.212"></a>
+<FONT color="green">213</FONT>                                             operation.filterOnRepeat();<a name="line.213"></a>
+<FONT color="green">214</FONT>    <a name="line.214"></a>
+<FONT color="green">215</FONT>                                             // if negate is true, then binary invert the Features<a name="line.215"></a>
+<FONT color="green">216</FONT>                                             if (operation.isNegate()) {<a name="line.216"></a>
+<FONT color="green">217</FONT>                                                      operation.track = negate(operation.track);<a name="line.217"></a>
+<FONT color="green">218</FONT>                                             }<a name="line.218"></a>
+<FONT color="green">219</FONT>                                    } else {<a name="line.219"></a>
+<FONT color="green">220</FONT>                                             // no match so set tracks to an empty Track, instead<a name="line.220"></a>
+<FONT color="green">221</FONT>                                             // of null.  This way we won't try to solve the group<a name="line.221"></a>
+<FONT color="green">222</FONT>                                             // again.<a name="line.222"></a>
+<FONT color="green">223</FONT>                                             operation.track = new Track(false);<a name="line.223"></a>
+<FONT color="green">224</FONT>                                    }<a name="line.224"></a>
+<FONT color="green">225</FONT>                                    if (debug) System.out.println("matched nested tracks: " + operation.track.getFeatures());<a name="line.225"></a>
+<FONT color="green">226</FONT>                                    if (debug) System.out.println("** FINISHED PROCESSING NESTED GROUP **\n");<a name="line.226"></a>
+<FONT color="green">227</FONT>                      } else {<a name="line.227"></a>
+<FONT color="green">228</FONT>                                    // if negate is true, then binary invert the Features<a name="line.228"></a>
+<FONT color="green">229</FONT>                                    if (operation.isNegate()) {<a name="line.229"></a>
+<FONT color="green">230</FONT>                                             operation.track = negate(operation.track);<a name="line.230"></a>
+<FONT color="green">231</FONT>                                    }<a name="line.231"></a>
+<FONT color="green">232</FONT>                      }<a name="line.232"></a>
+<FONT color="green">233</FONT>    <a name="line.233"></a>
+<FONT color="green">234</FONT>                      // since this is a new (untested) Operation, need to reset the<a name="line.234"></a>
+<FONT color="green">235</FONT>                      // Operation's Track iterator.<a name="line.235"></a>
+<FONT color="green">236</FONT>                      operation.resetTrack();<a name="line.236"></a>
+<FONT color="green">237</FONT>    <a name="line.237"></a>
+<FONT color="green">238</FONT>                      return operation;<a name="line.238"></a>
+<FONT color="green">239</FONT>             }<a name="line.239"></a>
+<FONT color="green">240</FONT>    <a name="line.240"></a>
+<FONT color="green">241</FONT>             /** <a name="line.241"></a>
+<FONT color="green">242</FONT>              * This will perform a 'binary' inversion of the Features in the<a name="line.242"></a>
+<FONT color="green">243</FONT>              * Track.<a name="line.243"></a>
+<FONT color="green">244</FONT>              */<a name="line.244"></a>
+<FONT color="green">245</FONT>             private static Track negate(Track track) {<a name="line.245"></a>
+<FONT color="green">246</FONT>                      Track out = new Track(false);<a name="line.246"></a>
+<FONT color="green">247</FONT>                      <a name="line.247"></a>
+<FONT color="green">248</FONT>                      // can't invert a Track that doesn't exist<a name="line.248"></a>
+<FONT color="green">249</FONT>                      if (track.numFeatures() == 0) return out;<a name="line.249"></a>
+<FONT color="green">250</FONT>    <a name="line.250"></a>
+<FONT color="green">251</FONT>                      // merge all overlapping Features.<a name="line.251"></a>
+<FONT color="green">252</FONT>                      track.mergeContiguous();<a name="line.252"></a>
+<FONT color="green">253</FONT>                      HashMap sources = track.getSources();<a name="line.253"></a>
+<FONT color="green">254</FONT>    <a name="line.254"></a>
+<FONT color="green">255</FONT>                      // step through each Sequence<a name="line.255"></a>
+<FONT color="green">256</FONT>                      for (Iterator s = sources.keySet().iterator(); s.hasNext();) {<a name="line.256"></a>
+<FONT color="green">257</FONT>                                    String source = (String) s.next();<a name="line.257"></a>
+<FONT color="green">258</FONT>                                    Sequence sourceObj = (Sequence) ObjectHandles.sequencePool.get(source);<a name="line.258"></a>
+<FONT color="green">259</FONT>    <a name="line.259"></a>
+<FONT color="green">260</FONT>                                    int sourceMax = sourceObj.getMax() - 1;<a name="line.260"></a>
+<FONT color="green">261</FONT>    <a name="line.261"></a>
+<FONT color="green">262</FONT>                                    // invert Features for this source<a name="line.262"></a>
+<FONT color="green">263</FONT>                                    TreeSet features = (TreeSet) sources.get(source);<a name="line.263"></a>
+<FONT color="green">264</FONT>                                    Iterator i = features.iterator();<a name="line.264"></a>
+<FONT color="green">265</FONT>    <a name="line.265"></a>
+<FONT color="green">266</FONT>                                    // get first Feature to deal with case when first<a name="line.266"></a>
+<FONT color="green">267</FONT>                                    // Feature doesn't start at 0<a name="line.267"></a>
+<FONT color="green">268</FONT>                                    if (! i.hasNext()) continue;<a name="line.268"></a>
+<FONT color="green">269</FONT>                                    Feature feature = (Feature) i.next();<a name="line.269"></a>
+<FONT color="green">270</FONT>    <a name="line.270"></a>
+<FONT color="green">271</FONT>                                    int minFeature = feature.getMin();<a name="line.271"></a>
+<FONT color="green">272</FONT>                                    if (minFeature &gt; 0) { <a name="line.272"></a>
+<FONT color="green">273</FONT>                                             // deal with first Feature not starting at 0<a name="line.273"></a>
+<FONT color="green">274</FONT>                                             //                                      out.addFeature(new ExactFeature(0, minFeature, sourceObj));<a name="line.274"></a>
+<FONT color="green">275</FONT>                                             out.addFeature(new ExactFeature(0, minFeature - 1, sourceObj));<a name="line.275"></a>
+<FONT color="green">276</FONT>                                    }<a name="line.276"></a>
+<FONT color="green">277</FONT>    <a name="line.277"></a>
+<FONT color="green">278</FONT>                                    //                              int minOut = feature.getMax();<a name="line.278"></a>
+<FONT color="green">279</FONT>                                    int minOut = feature.getMax() + 1;<a name="line.279"></a>
+<FONT color="green">280</FONT>                                    while (i.hasNext()) {<a name="line.280"></a>
+<FONT color="green">281</FONT>                                             feature = (Feature) i.next();<a name="line.281"></a>
+<FONT color="green">282</FONT>                                             //                                      minFeature = feature.getMin();<a name="line.282"></a>
+<FONT color="green">283</FONT>                                             minFeature = feature.getMin() - 1;<a name="line.283"></a>
+<FONT color="green">284</FONT>                                             out.addFeature(new ExactFeature(minOut, minFeature, sourceObj));<a name="line.284"></a>
+<FONT color="green">285</FONT>                                             //                                      minOut = feature.getMax();<a name="line.285"></a>
+<FONT color="green">286</FONT>                                             int fMax = feature.getMax() + 1;<a name="line.286"></a>
+<FONT color="green">287</FONT>                                             if (fMax &gt; minOut) {<a name="line.287"></a>
+<FONT color="green">288</FONT>                                                      minOut = fMax;<a name="line.288"></a>
+<FONT color="green">289</FONT>                                                      if ((fMax - 2) &gt;= sourceMax) {<a name="line.289"></a>
+<FONT color="green">290</FONT>                                                                    GloDBUtils.printError("Feature position exceeds sequence length");<a name="line.290"></a>
+<FONT color="green">291</FONT>                                                                    return new Track(false);<a name="line.291"></a>
+<FONT color="green">292</FONT>                                                      }<a name="line.292"></a>
+<FONT color="green">293</FONT>                                             }<a name="line.293"></a>
+<FONT color="green">294</FONT>                                    }<a name="line.294"></a>
+<FONT color="green">295</FONT>    <a name="line.295"></a>
+<FONT color="green">296</FONT>                                    if (minOut &lt;= sourceMax) {<a name="line.296"></a>
+<FONT color="green">297</FONT>                                             out.addFeature(new ExactFeature(minOut, sourceMax, sourceObj));<a name="line.297"></a>
+<FONT color="green">298</FONT>                                    }<a name="line.298"></a>
+<FONT color="green">299</FONT>                      }<a name="line.299"></a>
+<FONT color="green">300</FONT>    <a name="line.300"></a>
+<FONT color="green">301</FONT>                      return out;<a name="line.301"></a>
+<FONT color="green">302</FONT>             }<a name="line.302"></a>
+<FONT color="green">303</FONT>    } // ParserUtils.java<a name="line.303"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

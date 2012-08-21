@@ -1,0 +1,415 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<TITLE>GLO-DB Parser</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=CENTER>GLO-DB Parser</H1>
+
+<H2 ALIGN=CENTER>TOKENS</H2>
+<CENTER><TABLE BORDER=1 CELLPADDING=3 CELLSPACING=0>
+<TR><TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="sp0"><B>#SP0</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( " " )* </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match <I>0 or more</I> spaces
+and is only used to construct tokens below.</TD>
+</TR></TABLE>
+</TD>
+<TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="sp1"><B>#SP1</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( " " )+ </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match <I>1 or more</I> spaces
+and is only used to construct tokens below.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="integer"><B>INTEGER</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( ["0"-"9"] )+ </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match any integer.</TD>
+</TR></TABLE>
+</TD>
+<TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="float"><B>FLOAT</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( ["0"-"9"] )* "." ( ["0"-"9"] )+ </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match any float.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="object"><B>#OBJECT</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","_","0"-"9"] )* </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match a single Feature
+or Sequence object name and is only used to construct tokens below.</TD>
+</TR></TABLE>
+</TD>
+<TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="pos"><B>POS</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( "." &nbsp; | &nbsp; "pos" &nbsp; |
+&nbsp; "any position" )</TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match a single position
+in the Sequence.  For example, "<B>F.{3-5}F</B>" will match Locations
+in any Features that are separated by 3 to 5 positions.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="loc"><B>LOC</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B><BR><B>|</B><BR><B>|</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>["F","f"] 
+<BR>"loc any feature" 
+<BR>"a location in any feature"</TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match a single Location
+from any Feature and <I>will</I> include the Location in the output Feature.</TD>
+</TR></TABLE>
+</TD>
+<TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="nloc"><B>NLOC</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B><BR><B>|</B><BR><B>|</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"~" <B>&lt;<A HREF="#sp0">SP0</A>&gt;</B> ["F","f"] 
+<BR><B>&lt;<A HREF="#loc">LOC</A>&gt;</B> " no out" 
+<BR><B>&lt;<A HREF="#loc">LOC</A>&gt;</B> " not outputted" </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match a single Location
+from any Feature and <I>will not</I> include the Location in the
+output Feature.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD COLSPAN=2>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="feature"><B>FEATURE</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B><BR><B>|</B><BR><B>|</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>["F","f"] ":" <B>&lt;<A HREF="#object">OBJECT</A>&gt;</B> 
+<BR>"loc feature" <B>&lt;<A HREF="#sp1">SP1</A>&gt;</B> ["F","f"] ":" <B>&lt;<A HREF="#object">OBJECT</A>&gt;</B> 
+<BR>"a location in feature" <B>&lt;<A HREF="#sp1">SP1</A>&gt;</B> ["F","f"] ":" <B>&lt;<A HREF="#object">OBJECT</A>&gt;</B> </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match a single Location
+from the Feature "&lt;OBJECT&gt;" and <I>will</I> include the Location in 
+the output Feature.  Note that the feature specifier ("F:") must immediately
+preceed the Feature name("&lt;OBJECT&gt;").  For example, "<B>F:Fl{3 - 5}</B>"
+will match 3 to 5 contiguous Locations from Feature "F1".  All of the
+matched Locations will be included in output Feature.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD COLSPAN=2>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="nfeature"><B>NFEATURE</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B><BR><B>|</B><BR><B>|</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"~" <B>&lt;<A HREF="#sp0">SP0</A>&gt;</B> ["F","f"] ":" <B>&lt;<A HREF="#object">OBJECT</A>&gt;</B> 
+<BR><B>&lt;<A HREF="#feature">FEATURE</A>&gt;</B> <B>&lt;<A HREF="#sp1">SP1</A>&gt;</B> "no out"
+<BR><B>&lt;<A HREF="#feature">FEATURE</A>&gt;</B> <B>&lt;<A HREF="#sp1">SP1</A>&gt;</B> "not outputted" </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match a single Location
+from the Feature "&lt;OBJECT&gt;" and <I>will not</I> include the Location 
+in the output Feature.  Note that the feature specifier ("F:") must immediately
+preceed the Feature name("&lt;OBJECT&gt;").  For example, 
+"<B>F:F1 ~F:Fl{2} .{100} F:F2</B>" will match 3 contiguous Locations
+from Feature "F1", followed by 100 positions, followed by a Location
+from Feature "F2".  The output Feature will include the first of the 3
+contiguous Locations from F1 and the Location from F2.</TD> 
+</TR></TABLE>
+</TD></TR>
+<TR><TD COLSPAN=2>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="sequence"><B>SEQUENCE</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B><BR><B>|</B><BR><B>|</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>["S","s"] ":" <B>&lt;<A HREF="#object">OBJECT</A>&gt;</B>
+<BR>"seq" <B>&lt;<A HREF="#sp1">SP1</A>&gt;</B> ["S","s"] ":" <B>&lt;<A HREF="#object">OBJECT</A>&gt;</B>
+<BR>"on sequence" <B>&lt;<A HREF="#sp1">SP1</A>&gt;</B> ["S","s"] ":" <B>&lt;<A HREF="#object">OBJECT</A>&gt;</B> </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token will match a single Sequence
+object "&lt;OBJECT&gt;" and will constrain matching the previous
+"&lt;LOC&gt;," "&lt;NLOC&gt;," "&lt;FEATURE&gt;," or
+"&lt;NFEATURE&gt;" token to the Sequence "&lt;OBJECT&gt;."  For
+example, "<B>F:Fl S:S1{3 - 5}</B>" will match 3 to 5 contiguous
+Locations from Feature "F1" but only if they are Locations on the
+Sequence "S1".</TD>  
+</TR></TABLE>
+</TD></TR>
+<TR><TD COLSPAN=2>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="length"><B>LENGTH</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B><BR><B>|</B><BR><B>|</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"< &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? >"
+<BR>"len &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )?"
+<BR>"length of &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )?" </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used to restrict the
+length of Locations being matched.  It is possible to restrict the
+length (the number of positions) of a Location object being match to
+either an absolute number or a range. For example,  "<B>F:Fl <10-12>
+S:S1{3 - 5}</B>" will match 3 to 5 contiguous Locations from Feature
+"F1" but only if they are Locations on the Sequence "S1" <I>and</I>
+only if the Locations are from 10 to 12 positions wide.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD COLSPAN=2>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="from"><B>FROM</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B><BR><B>|</B><BR><B>|</B><BR><B>|</B><BR><B>|</B><BR><B>|</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"< ; &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? >"
+<BR>"< &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? ; &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? >"
+<BR>"from &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )?"
+<BR>"len &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? from &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )?"
+<BR>"from position &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )?"
+<BR>"length of &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? from position &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )?" </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is an extension of
+&lt;LENGTH&gt;, although it can exist independent of &lt;LENGTH&gt;.
+With this token, it is possible to limit the range of positions
+matched on a Sequence.  For example,  "<B>F:Fl <10-12; 100> .{20 - 50}
+F:F2 <;150 - 200></B>" will match a Location from Feature
+"F1" that is 10 to 12 positions wide and exists at a position 100 or
+greater on any Sequence, followed by 20 to 50 positions, followed by a
+Location from Feature "F2" that exists somewhere between positions 150
+and 200 on the same Sequence.</TD> 
+</TR></TABLE>
+</TD></TR>
+<TR><TD COLSPAN=2>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="repeat"><B>REPEAT</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B><BR><B>|</B><BR><B>|</B><BR><B>|</B><BR><B>|</B><BR><B>|</B><BR><B>|</B><BR><B>|</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"{ &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? }"
+<BR>"{ &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? ; &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? }"
+<BR>"repeated &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? ( times )?"
+<BR>"repeated &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? ( times )? within &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? ( positions )?"
+<BR>"{ &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? ; &lt;FLOAT&gt; }"
+<BR>"{ &lt;FLOAT&gt; ; &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? }"
+<BR>"repeated &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? ( times )? density &lt;FLOAT&gt;"
+<BR>"density &lt;FLOAT&gt; within &lt;NUMBER&gt; ( - &lt;NUMBER&gt; )? ( positions )?"</TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used to repeat the
+previous token the specified number of times, optionally within a
+specific number of positions.  Alternatively, this can be specified as
+a density.  For example, "<B>(F .{10-20}) { 0.2; 1000 }</B>" will
+match a Location from any Feature followed by 10 to 20 positions
+repeated with a density of 0.2 within 1000 positions.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD COLSPAN=2>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="class"><B>CLASS</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"[ &lt;ELEMENT&gt; ( | &lt;ELEMENT&gt; )* ]"</TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used to choose
+alternate "Elements" which are &lt;LOC&gt;, &lt;NLOC&gt;,
+&lt;FEATURE&gt;, and &lt;NFEATURE&gt;.  For example, "<B>[F:f1 | F:f2]
+.{10-20} F</B>" will match a Location from Feature "f1" <I>or</I>
+"f2", followed by 10 to 20 positions, followed by any feature.</TD>  
+</TR></TABLE>
+</TD></TR>
+<TR><TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="group"><B>GROUP</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"( )"</TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used for grouping any
+other tokens.</TD>
+</TR></TABLE>
+</TD>
+<TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="not"><B>NOT</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"!" </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used to negate, not
+match, the specified token.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="or"><B>OR</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( "|" &nbsp; | &nbsp; "or" )</TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used within a
+&lt;CLASS&gt; to specify alternative &lt;ELEMENTS&gt;.</TD>
+</TR></TABLE>
+</TD>
+<TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="star"><B>STAR</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD AppLIGN=LEFT VALIGN=BASELINE>"*" </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used to specify 0 or
+more of the preceeding tokens.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="hook"><B>HOOK</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"?" </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used to specify 0 or 1 of
+the preceeding tokens.</TD>
+</TR></TABLE>
+</TD>
+<TD>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="plus"><B>PLUS</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"+" </TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used to specify 1 or more
+of the preceeding tokens.</TD>
+</TR></TABLE>
+</TD></TR>
+<TR><TD COLSPAN=2>
+<TABLE BORDER=0 CELLPADDING=3 CELLSPACING=0><TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE WIDTH=100><A NAME="fromend"><B>FROMEND</B></A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE WIDTH=5><B>:</B></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( "$" &nbsp; | &nbsp; "from end" &nbsp;
+| &nbsp; "from the end" )</TD>
+</TR><TR><TD></TD><TD></TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>This token is used to specify that the
+match should occur from the end of the Sequence, rather than the
+beginning.</TD> 
+</TR></TABLE>
+</TD></TR>
+</TABLE></CENTER>
+
+<H2 ALIGN=CENTER>IGNORED ITEMS</H2>
+<CENTER><TABLE border=1 cellpadding=5 cellspacing=0>
+<TR>
+<TD ALIGN=CENTER>" "</TD>
+<TD ALIGN=CENTER>"then"</TD>
+<TD ALIGN=CENTER>"followed by"</TD>
+<TD ALIGN=CENTER>"\r"</TD>
+<TD ALIGN=CENTER>"\t"</TD>
+</TR>
+</TABLE></CENTER>
+
+<H2 ALIGN=CENTER>CONSTRAINTS</H2>
+<CENTER><TABLE border=1 cellpadding=5 cellspacing=0>
+<TR><TD>&lt;SEQUENCE&gt; can only follow &lt;LOC&gt;, &lt;NLOC&gt;,
+&lt;FEATURE&gt;, &lt;NFEATURE&gt;, &lt;CLASS&gt;, or &lt;GROUP&gt;.
+Should &lt;SEQUENCE&gt; be allowed to follow &lt;CLASS&gt; and
+&lt;GROUP&gt;?  This could cause problems if &lt;SEQUENCE&gt; are also
+included in the grouping.</TD></TR> 
+<TR><TD>&lt;LENGTH&gt; can only follow &lt;LOC&gt;, &lt;NLOC&gt;,
+&lt;FEATURE&gt;, or &lt;NFEATURE&gt;</TD></TR> 
+<TR><TD>&lt;HOOK&gt;, &lt;STAR&gt;, and &lt;PLUS&gt; must follow
+&lt;CLASS&gt; or &lt;GROUP&gt;, prior to a &lt;SEQUENCE&gt; qualifier.</TD></TR>
+</TABLE></CENTER>
+
+<H2 ALIGN=CENTER>GRAMMER</H2>
+<TABLE>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod1">parseLine</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod2">expr</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod2">expr</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod3">grouping</A> | <A HREF="#prod4">element</A> | <A HREF="#prod5">negate</A> ) ( &lt;LREPEAT&gt; <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? ";" <A HREF="#prod7">density</A> &lt;RREPEAT&gt; | &lt;LREPEAT&gt; <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? ( ";" <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? )? &lt;RREPEAT&gt; | &lt;LREPEAT&gt; <A HREF="#prod7">density</A> ";" <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? &lt;RREPEAT&gt; | "repeated" <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? ( "times" )? "density" <A HREF="#prod7">density</A> | "repeated" <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? ( "times" )? ( "within" <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? ( "positions" )? )? | "density" <A HREF="#prod7">density</A> "within" <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? ( "positions" )? )? ( <A HREF="#prod2">expr</A> )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod3">grouping</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod8">locClass</A> | <A HREF="#prod9">group</A> ) ( <A HREF="#prod10">operator</A> )? ( <A HREF="#prod11">sequence</A> )?</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod8">locClass</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;LCLASS&gt; <A HREF="#prod4">element</A> ( &lt;OR&gt; <A HREF="#prod4">element</A> )* &lt;RCLASS&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod9">group</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;LGROUP&gt; <A HREF="#prod2">expr</A> &lt;RGROUP&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod4">element</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod12">length</A> | <A HREF="#prod13">position</A> )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod12">length</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod14">location</A> ( &lt;LLENGTH2&gt; <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? &lt;RLENGTH&gt; | &lt;LLENGTH&gt; <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? ( ";" <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? )? &lt;RLENGTH&gt; | &lt;LENGTH&gt; <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? ( &lt;FROM&gt; <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? )? | &lt;FROM&gt; <A HREF="#prod6">value</A> ( "-" <A HREF="#prod6">value</A> )? )? ( <A HREF="#prod11">sequence</A> )?</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod14">location</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod15">anyFeature</A> | <A HREF="#prod16">anyFeatureIgnore</A> | <A HREF="#prod17">featureRef</A> | <A HREF="#prod18">featureRefIgnore</A> )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod15">anyFeature</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;LOC&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod16">anyFeatureIgnore</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;NLOC&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod17">featureRef</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;FEATURE&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod18">featureRefIgnore</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;NFEATURE&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod13">position</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;POS&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod11">sequence</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;SEQUENCE&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod7">density</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;FLOAT&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod5">negate</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;NOT&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod10">operator</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;HOOK&gt; &nbsp; | &nbsp;
+&lt;PLUS&gt; &nbsp; | &nbsp; &lt;STAR&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod6">value</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;INTEGER&gt;</TD>
+</TR>
+</TABLE>
+
+
+</BODY>
+</HTML>

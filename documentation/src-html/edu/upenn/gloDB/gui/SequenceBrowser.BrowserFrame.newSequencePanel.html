@@ -1,0 +1,930 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright 2007, 2012 Stephen Fisher and Junhyong Kim, University of<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Pennsylvania.<a name="line.3"></a>
+<FONT color="green">004</FONT>     *<a name="line.4"></a>
+<FONT color="green">005</FONT>     * This file is part of Glo-DB.<a name="line.5"></a>
+<FONT color="green">006</FONT>     * <a name="line.6"></a>
+<FONT color="green">007</FONT>     * Glo-DB is free software: you can redistribute it and/or modify it<a name="line.7"></a>
+<FONT color="green">008</FONT>     * under the terms of the GNU General Public License as published by<a name="line.8"></a>
+<FONT color="green">009</FONT>     * the Free Software Foundation, either version 3 of the License, or<a name="line.9"></a>
+<FONT color="green">010</FONT>     * (at your option) any later version.<a name="line.10"></a>
+<FONT color="green">011</FONT>     * <a name="line.11"></a>
+<FONT color="green">012</FONT>     * Glo-DB is distributed in the hope that it will be useful, but<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.13"></a>
+<FONT color="green">014</FONT>     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU<a name="line.14"></a>
+<FONT color="green">015</FONT>     * General Public License for more details.<a name="line.15"></a>
+<FONT color="green">016</FONT>     * <a name="line.16"></a>
+<FONT color="green">017</FONT>     * You should have received a copy of the GNU General Public License<a name="line.17"></a>
+<FONT color="green">018</FONT>     * along with Glo-DB. If not, see &lt;http://www.gnu.org/licenses/&gt;.<a name="line.18"></a>
+<FONT color="green">019</FONT>     *<a name="line.19"></a>
+<FONT color="green">020</FONT>     * @(#)SequenceBrowser.java<a name="line.20"></a>
+<FONT color="green">021</FONT>     */<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    package edu.upenn.gloDB.gui;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    import edu.upenn.gloDB.*;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.awt.*;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.awt.event.*;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import javax.swing.*;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import javax.swing.event.*;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import java.util.StringTokenizer;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import java.util.HashMap;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import java.util.Set;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import java.util.Iterator;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import java.util.ArrayList;<a name="line.34"></a>
+<FONT color="green">035</FONT>    <a name="line.35"></a>
+<FONT color="green">036</FONT>    /**<a name="line.36"></a>
+<FONT color="green">037</FONT>     * Browse existing Sequences.<a name="line.37"></a>
+<FONT color="green">038</FONT>     *<a name="line.38"></a>
+<FONT color="green">039</FONT>     * @author  Stephen Fisher<a name="line.39"></a>
+<FONT color="green">040</FONT>     * @version $Id: SequenceBrowser.java,v 1.25.2.28 2007/03/01 21:17:33 fisher Exp $<a name="line.40"></a>
+<FONT color="green">041</FONT>     */<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>    public class SequenceBrowser {<a name="line.43"></a>
+<FONT color="green">044</FONT>             private static BrowserFrame browserFrame = null;<a name="line.44"></a>
+<FONT color="green">045</FONT>    <a name="line.45"></a>
+<FONT color="green">046</FONT>             public static JFrame show() {<a name="line.46"></a>
+<FONT color="green">047</FONT>                      return show("");<a name="line.47"></a>
+<FONT color="green">048</FONT>             }<a name="line.48"></a>
+<FONT color="green">049</FONT>    <a name="line.49"></a>
+<FONT color="green">050</FONT>        public static JFrame show(String id) {<a name="line.50"></a>
+<FONT color="green">051</FONT>                      // only allow one instance of BrowserFrame<a name="line.51"></a>
+<FONT color="green">052</FONT>                      if (browserFrame == null) browserFrame = new BrowserFrame();<a name="line.52"></a>
+<FONT color="green">053</FONT>    <a name="line.53"></a>
+<FONT color="green">054</FONT>                      browserFrame.selectSequence(id);<a name="line.54"></a>
+<FONT color="green">055</FONT>                      browserFrame.show();<a name="line.55"></a>
+<FONT color="green">056</FONT>    <a name="line.56"></a>
+<FONT color="green">057</FONT>                      return browserFrame;<a name="line.57"></a>
+<FONT color="green">058</FONT>             }<a name="line.58"></a>
+<FONT color="green">059</FONT>                      <a name="line.59"></a>
+<FONT color="green">060</FONT>             private static class BrowserFrame extends JFrame {<a name="line.60"></a>
+<FONT color="green">061</FONT>                      private JComboBox sequenceCB;<a name="line.61"></a>
+<FONT color="green">062</FONT>                      private JList attributeL;<a name="line.62"></a>
+<FONT color="green">063</FONT>                      private JButton addAttributeB;<a name="line.63"></a>
+<FONT color="green">064</FONT>                      private JButton editAttributeB;<a name="line.64"></a>
+<FONT color="green">065</FONT>                      private JButton delAttributeB;<a name="line.65"></a>
+<FONT color="green">066</FONT>                      private JList trackL;<a name="line.66"></a>
+<FONT color="green">067</FONT>                      private JLabel statusBar;<a name="line.67"></a>
+<FONT color="green">068</FONT>                      <a name="line.68"></a>
+<FONT color="green">069</FONT>                      private JLabel offsetL = new JLabel("");<a name="line.69"></a>
+<FONT color="green">070</FONT>                      private JLabel minL = new JLabel("");<a name="line.70"></a>
+<FONT color="green">071</FONT>                      private JLabel maxL = new JLabel("");<a name="line.71"></a>
+<FONT color="green">072</FONT>                      private JLabel lengthL = new JLabel("");<a name="line.72"></a>
+<FONT color="green">073</FONT>                      private JLabel loadDataL = new JLabel("");<a name="line.73"></a>
+<FONT color="green">074</FONT>                      <a name="line.74"></a>
+<FONT color="green">075</FONT>                      private Sequence sequence;<a name="line.75"></a>
+<FONT color="green">076</FONT>                      private Object[] tracks;<a name="line.76"></a>
+<FONT color="green">077</FONT>                      <a name="line.77"></a>
+<FONT color="green">078</FONT>                      BrowserFrame thisFrame;<a name="line.78"></a>
+<FONT color="green">079</FONT>                      <a name="line.79"></a>
+<FONT color="green">080</FONT>                      public BrowserFrame() {<a name="line.80"></a>
+<FONT color="green">081</FONT>                                    super("Sequence Browser");<a name="line.81"></a>
+<FONT color="green">082</FONT>                                    <a name="line.82"></a>
+<FONT color="green">083</FONT>                                    // keep pointer to self so can 'dispose' Frame below<a name="line.83"></a>
+<FONT color="green">084</FONT>                                    thisFrame = this;<a name="line.84"></a>
+<FONT color="green">085</FONT>                                    <a name="line.85"></a>
+<FONT color="green">086</FONT>                                    setDefaultCloseOperation(HIDE_ON_CLOSE);<a name="line.86"></a>
+<FONT color="green">087</FONT>                                    <a name="line.87"></a>
+<FONT color="green">088</FONT>                                    // ***** SETUP SEQUENCE INFO *****<a name="line.88"></a>
+<FONT color="green">089</FONT>                                    JToolBar sequenceP = new JToolBar();<a name="line.89"></a>
+<FONT color="green">090</FONT>                                    sequenceP.setFloatable(false);<a name="line.90"></a>
+<FONT color="green">091</FONT>                                    sequenceP.setBorder(BorderFactory.createEtchedBorder());<a name="line.91"></a>
+<FONT color="green">092</FONT>                                    // add Sequence ComboBox<a name="line.92"></a>
+<FONT color="green">093</FONT>                                    sequenceCB = new JComboBox(ObjectHandles.getSequenceList());<a name="line.93"></a>
+<FONT color="green">094</FONT>                                    sequenceCB.setEditable(false);<a name="line.94"></a>
+<FONT color="green">095</FONT>                                    //                              selectSequence(id);<a name="line.95"></a>
+<FONT color="green">096</FONT>                                    sequenceCB.addActionListener(new ActionListener() {<a name="line.96"></a>
+<FONT color="green">097</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.97"></a>
+<FONT color="green">098</FONT>                                                                    String selection = (String) ((JComboBox) e.getSource()).getSelectedItem();<a name="line.98"></a>
+<FONT color="green">099</FONT>                                                                    sequenceSelected(selection);<a name="line.99"></a>
+<FONT color="green">100</FONT>                                                      }<a name="line.100"></a>
+<FONT color="green">101</FONT>                                             });<a name="line.101"></a>
+<FONT color="green">102</FONT>                                    // add Buttons<a name="line.102"></a>
+<FONT color="green">103</FONT>                                    JButton newB = new JButton(new ImageIcon("icons/new.png"));<a name="line.103"></a>
+<FONT color="green">104</FONT>                                    newB.setToolTipText("New");<a name="line.104"></a>
+<FONT color="green">105</FONT>                                    newB.addMouseListener(new MouseAdapter() {<a name="line.105"></a>
+<FONT color="green">106</FONT>                                                      // add status bar text when mouse moves over button<a name="line.106"></a>
+<FONT color="green">107</FONT>                                                      public void mouseEntered(MouseEvent e) { statusBar.setText("New sequence"); }<a name="line.107"></a>
+<FONT color="green">108</FONT>                                                      // clear status bar when mouse moves off button<a name="line.108"></a>
+<FONT color="green">109</FONT>                                                      public void mouseExited(MouseEvent e) { statusBar.setText(""); }<a name="line.109"></a>
+<FONT color="green">110</FONT>                                             });<a name="line.110"></a>
+<FONT color="green">111</FONT>                                    newB.addActionListener(new ActionListener() {<a name="line.111"></a>
+<FONT color="green">112</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.112"></a>
+<FONT color="green">113</FONT>                                                                    Sequence tmp = GUISequenceIO.newSequence();<a name="line.113"></a>
+<FONT color="green">114</FONT>                                                                    // if user 'cancelled' then don't do anything<a name="line.114"></a>
+<FONT color="green">115</FONT>                                                                    if (tmp != null) {       <a name="line.115"></a>
+<FONT color="green">116</FONT>                                                                             sequence = tmp;<a name="line.116"></a>
+<FONT color="green">117</FONT>                                                                             <a name="line.117"></a>
+<FONT color="green">118</FONT>                                                                             // don't use 'id' here because the actual ID<a name="line.118"></a>
+<FONT color="green">119</FONT>                                                                             // might have changed when creating the<a name="line.119"></a>
+<FONT color="green">120</FONT>                                                                             // Sequence<a name="line.120"></a>
+<FONT color="green">121</FONT>                                                                             sequenceCB.setSelectedItem(sequence.getID());<a name="line.121"></a>
+<FONT color="green">122</FONT>                                                                    }<a name="line.122"></a>
+<FONT color="green">123</FONT>                                                      }<a name="line.123"></a>
+<FONT color="green">124</FONT>                                             });<a name="line.124"></a>
+<FONT color="green">125</FONT>                                    JButton loadB = new JButton(new ImageIcon("icons/load.png"));<a name="line.125"></a>
+<FONT color="green">126</FONT>                                    loadB.setToolTipText("Load");<a name="line.126"></a>
+<FONT color="green">127</FONT>                                    loadB.addMouseListener(new MouseAdapter() {<a name="line.127"></a>
+<FONT color="green">128</FONT>                                                      // add status bar text when mouse moves over button<a name="line.128"></a>
+<FONT color="green">129</FONT>                                                      public void mouseEntered(MouseEvent e) { statusBar.setText("Load sequence"); }<a name="line.129"></a>
+<FONT color="green">130</FONT>                                                      // clear status bar when mouse moves off button<a name="line.130"></a>
+<FONT color="green">131</FONT>                                                      public void mouseExited(MouseEvent e) { statusBar.setText(""); }<a name="line.131"></a>
+<FONT color="green">132</FONT>                                             });<a name="line.132"></a>
+<FONT color="green">133</FONT>                                    loadB.addActionListener(new ActionListener() {<a name="line.133"></a>
+<FONT color="green">134</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.134"></a>
+<FONT color="green">135</FONT>                                                                    Set sequences = GUISequenceIO.loadSequence();<a name="line.135"></a>
+<FONT color="green">136</FONT>                                                                    if (sequences != null) {<a name="line.136"></a>
+<FONT color="green">137</FONT>                                                                             Iterator i = sequences.iterator();<a name="line.137"></a>
+<FONT color="green">138</FONT>                                                                             Sequence sequence = (Sequence) i.next();<a name="line.138"></a>
+<FONT color="green">139</FONT>                                                                             sequenceCB.setSelectedIndex(ObjectHandles.getSequenceList().getIndexOf(sequence.getID()));<a name="line.139"></a>
+<FONT color="green">140</FONT>                                                                    }<a name="line.140"></a>
+<FONT color="green">141</FONT>                                                      }<a name="line.141"></a>
+<FONT color="green">142</FONT>                                             });<a name="line.142"></a>
+<FONT color="green">143</FONT>                                    JButton saveB = new JButton(new ImageIcon("icons/save.png"));<a name="line.143"></a>
+<FONT color="green">144</FONT>                                    saveB.setToolTipText("Save");<a name="line.144"></a>
+<FONT color="green">145</FONT>                                    saveB.addMouseListener(new MouseAdapter() {<a name="line.145"></a>
+<FONT color="green">146</FONT>                                                      // add status bar text when mouse moves over button<a name="line.146"></a>
+<FONT color="green">147</FONT>                                                      public void mouseEntered(MouseEvent e) { statusBar.setText("Save sequence"); }<a name="line.147"></a>
+<FONT color="green">148</FONT>                                                      // clear status bar when mouse moves off button<a name="line.148"></a>
+<FONT color="green">149</FONT>                                                      public void mouseExited(MouseEvent e) { statusBar.setText(""); }<a name="line.149"></a>
+<FONT color="green">150</FONT>                                             });<a name="line.150"></a>
+<FONT color="green">151</FONT>                                    saveB.addActionListener(new ActionListener() {<a name="line.151"></a>
+<FONT color="green">152</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.152"></a>
+<FONT color="green">153</FONT>                                                                    if (sequence == null) return;<a name="line.153"></a>
+<FONT color="green">154</FONT>                                                                    GloDBUtils.printMsg("'Save' not yet implemented.");<a name="line.154"></a>
+<FONT color="green">155</FONT>                                                      }<a name="line.155"></a>
+<FONT color="green">156</FONT>                                             });<a name="line.156"></a>
+<FONT color="green">157</FONT>                                    JButton sourceB = new JButton(new ImageIcon("icons/web.png"));<a name="line.157"></a>
+<FONT color="green">158</FONT>                                    sourceB.setToolTipText("View/edit source location");<a name="line.158"></a>
+<FONT color="green">159</FONT>                                    sourceB.addMouseListener(new MouseAdapter() {<a name="line.159"></a>
+<FONT color="green">160</FONT>                                                      // add status bar text when mouse moves over button<a name="line.160"></a>
+<FONT color="green">161</FONT>                                                      public void mouseEntered(MouseEvent e) { statusBar.setText("Edit and/or view the source location (file, URL, etc)"); }<a name="line.161"></a>
+<FONT color="green">162</FONT>                                                      // clear status bar when mouse moves off button<a name="line.162"></a>
+<FONT color="green">163</FONT>                                                      public void mouseExited(MouseEvent e) { statusBar.setText(""); }<a name="line.163"></a>
+<FONT color="green">164</FONT>                                             });<a name="line.164"></a>
+<FONT color="green">165</FONT>                                    sourceB.addActionListener(new ActionListener() {<a name="line.165"></a>
+<FONT color="green">166</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.166"></a>
+<FONT color="green">167</FONT>                                                                    if (sequence == null) return;<a name="line.167"></a>
+<FONT color="green">168</FONT>                                                                    new EditSourcePanel();<a name="line.168"></a>
+<FONT color="green">169</FONT>                                                      }<a name="line.169"></a>
+<FONT color="green">170</FONT>                                             });<a name="line.170"></a>
+<FONT color="green">171</FONT>                                    JButton viewB = new JButton(new ImageIcon("icons/view.png"));<a name="line.171"></a>
+<FONT color="green">172</FONT>                                    viewB.setToolTipText("View Data");<a name="line.172"></a>
+<FONT color="green">173</FONT>                                    viewB.addMouseListener(new MouseAdapter() {<a name="line.173"></a>
+<FONT color="green">174</FONT>                                                      // add status bar text when mouse moves over button<a name="line.174"></a>
+<FONT color="green">175</FONT>                                                      public void mouseEntered(MouseEvent e) { statusBar.setText("View sequence data"); }<a name="line.175"></a>
+<FONT color="green">176</FONT>                                                      // clear status bar when mouse moves off button<a name="line.176"></a>
+<FONT color="green">177</FONT>                                                      public void mouseExited(MouseEvent e) { statusBar.setText(""); }<a name="line.177"></a>
+<FONT color="green">178</FONT>                                             });<a name="line.178"></a>
+<FONT color="green">179</FONT>                                    viewB.addActionListener(new ActionListener() {<a name="line.179"></a>
+<FONT color="green">180</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.180"></a>
+<FONT color="green">181</FONT>                                                                    if (sequence == null) return;<a name="line.181"></a>
+<FONT color="green">182</FONT>                                                                    <a name="line.182"></a>
+<FONT color="green">183</FONT>                                                                    // if user set data directly, then getDataLoader<a name="line.183"></a>
+<FONT color="green">184</FONT>                                                                    // may not be set but there would still be data to<a name="line.184"></a>
+<FONT color="green">185</FONT>                                                                    // view<a name="line.185"></a>
+<FONT color="green">186</FONT>                                                                    if ((! sequence.isDataLoaded()) &amp;&amp; (sequence.getDataLoader() == null)) {<a name="line.186"></a>
+<FONT color="green">187</FONT>                                                                             GloDBUtils.printError("No source data associated with this sequence.");<a name="line.187"></a>
+<FONT color="green">188</FONT>                                                                             return;<a name="line.188"></a>
+<FONT color="green">189</FONT>                                                                    } <a name="line.189"></a>
+<FONT color="green">190</FONT>                                                                    <a name="line.190"></a>
+<FONT color="green">191</FONT>                                                                    // warn user for very long sequences<a name="line.191"></a>
+<FONT color="green">192</FONT>                                                                    if (sequence.length() &gt; 100000) {<a name="line.192"></a>
+<FONT color="green">193</FONT>                                                                             String msg = "The sequence is very long (" + Integer.toString(sequence.length()) + " bp).\n";<a name="line.193"></a>
+<FONT color="green">194</FONT>                                                                             msg += "It may take 60sec or longer to create this display.\n";<a name="line.194"></a>
+<FONT color="green">195</FONT>                                                                             msg += "Are you sure you want to continue?\n";<a name="line.195"></a>
+<FONT color="green">196</FONT>                                                                             Object[] options = {"Display", "Cancel"};<a name="line.196"></a>
+<FONT color="green">197</FONT>                                                                             int flag = JOptionPane.showOptionDialog(null, msg,<a name="line.197"></a>
+<FONT color="green">198</FONT>                                                                                                                                                                                      "Display Confirmation",<a name="line.198"></a>
+<FONT color="green">199</FONT>                                                                                                                                                                                      JOptionPane.YES_NO_OPTION,<a name="line.199"></a>
+<FONT color="green">200</FONT>                                                                                                                                                                                      JOptionPane.QUESTION_MESSAGE,<a name="line.200"></a>
+<FONT color="green">201</FONT>                                                                                                                                                                                      null,<a name="line.201"></a>
+<FONT color="green">202</FONT>                                                                                                                                                                                      options,<a name="line.202"></a>
+<FONT color="green">203</FONT>                                                                                                                                                                                      options[1]);<a name="line.203"></a>
+<FONT color="green">204</FONT>                                                                             if (flag == JOptionPane.YES_OPTION) { // "Display"<a name="line.204"></a>
+<FONT color="green">205</FONT>                                                                                      new ViewSequencePanel();<a name="line.205"></a>
+<FONT color="green">206</FONT>                                                                             }<a name="line.206"></a>
+<FONT color="green">207</FONT>                                                                    } else {<a name="line.207"></a>
+<FONT color="green">208</FONT>                                                                             // short (&lt; 100K bp) sequence so just display<a name="line.208"></a>
+<FONT color="green">209</FONT>                                                                             new ViewSequencePanel();<a name="line.209"></a>
+<FONT color="green">210</FONT>                                                                    }<a name="line.210"></a>
+<FONT color="green">211</FONT>                                                                    <a name="line.211"></a>
+<FONT color="green">212</FONT>                                                                    // if data wasn't previously loaded, it should be<a name="line.212"></a>
+<FONT color="green">213</FONT>                                                                    // now so try again to set these values.<a name="line.213"></a>
+<FONT color="green">214</FONT>                                                                    if (sequence.isDataLoaded()) {<a name="line.214"></a>
+<FONT color="green">215</FONT>                                                                             maxL.setText(Integer.toString(sequence.getMax()));<a name="line.215"></a>
+<FONT color="green">216</FONT>                                                                             lengthL.setText(Integer.toString(sequence.length()));<a name="line.216"></a>
+<FONT color="green">217</FONT>                                                                    }<a name="line.217"></a>
+<FONT color="green">218</FONT>                                                                    loadDataL.setText(Boolean.toString(sequence.isDataLoaded()));<a name="line.218"></a>
+<FONT color="green">219</FONT>                                                      }<a name="line.219"></a>
+<FONT color="green">220</FONT>                                             });<a name="line.220"></a>
+<FONT color="green">221</FONT>                                    JButton deleteB= new JButton(new ImageIcon("icons/delete.png"));<a name="line.221"></a>
+<FONT color="green">222</FONT>                                    deleteB.setToolTipText("Delete Sequence");<a name="line.222"></a>
+<FONT color="green">223</FONT>                                    deleteB.addMouseListener(new MouseAdapter() {<a name="line.223"></a>
+<FONT color="green">224</FONT>                                                      // add status bar text when mouse moves over button<a name="line.224"></a>
+<FONT color="green">225</FONT>                                                      public void mouseEntered(MouseEvent e) { statusBar.setText("THIS WILL PERMANENTLY DELETE THE SEQUENCE!"); }<a name="line.225"></a>
+<FONT color="green">226</FONT>                                                      // clear status bar when mouse moves off button<a name="line.226"></a>
+<FONT color="green">227</FONT>                                                      public void mouseExited(MouseEvent e) { statusBar.setText(""); }<a name="line.227"></a>
+<FONT color="green">228</FONT>                                             });<a name="line.228"></a>
+<FONT color="green">229</FONT>                                    deleteB.addActionListener(new ActionListener() {<a name="line.229"></a>
+<FONT color="green">230</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.230"></a>
+<FONT color="green">231</FONT>                                                                    if (sequence == null) return;   <a name="line.231"></a>
+<FONT color="green">232</FONT>                                                                    <a name="line.232"></a>
+<FONT color="green">233</FONT>                                                                    String msg = "Are you sure you want to remove this sequence?\n";<a name="line.233"></a>
+<FONT color="green">234</FONT>                                                                    msg += "Sequence: " + sequence.getID();<a name="line.234"></a>
+<FONT color="green">235</FONT>                                                                    Object[] options = {"Delete Sequence", "Cancel"};<a name="line.235"></a>
+<FONT color="green">236</FONT>                                                                    int flag = JOptionPane.showOptionDialog(null, msg,<a name="line.236"></a>
+<FONT color="green">237</FONT>                                                                                                                                                                             "Delete Confirmation",<a name="line.237"></a>
+<FONT color="green">238</FONT>                                                                                                                                                                             JOptionPane.YES_NO_OPTION,<a name="line.238"></a>
+<FONT color="green">239</FONT>                                                                                                                                                                             JOptionPane.QUESTION_MESSAGE,<a name="line.239"></a>
+<FONT color="green">240</FONT>                                                                                                                                                                             null,<a name="line.240"></a>
+<FONT color="green">241</FONT>                                                                                                                                                                             options,<a name="line.241"></a>
+<FONT color="green">242</FONT>                                                                                                                                                                             options[1]);<a name="line.242"></a>
+<FONT color="green">243</FONT>                                                                    if (flag == JOptionPane.YES_OPTION) { // "Delete"<a name="line.243"></a>
+<FONT color="green">244</FONT>                                                                             ObjectHandles.removeSequence(sequence);<a name="line.244"></a>
+<FONT color="green">245</FONT>                                                                             if (sequenceCB.getItemCount() &gt; 0) {<a name="line.245"></a>
+<FONT color="green">246</FONT>                                                                                      sequenceCB.setSelectedIndex(0);<a name="line.246"></a>
+<FONT color="green">247</FONT>                                                                             } else {<a name="line.247"></a>
+<FONT color="green">248</FONT>                                                                                      sequenceSelected(null);<a name="line.248"></a>
+<FONT color="green">249</FONT>                                                                             }<a name="line.249"></a>
+<FONT color="green">250</FONT>                                                                    }<a name="line.250"></a>
+<FONT color="green">251</FONT>                                                      }<a name="line.251"></a>
+<FONT color="green">252</FONT>                                             });<a name="line.252"></a>
+<FONT color="green">253</FONT>                                    JButton closeB = new JButton(new ImageIcon("icons/close.png"));<a name="line.253"></a>
+<FONT color="green">254</FONT>                                    closeB.setToolTipText("Close");<a name="line.254"></a>
+<FONT color="green">255</FONT>                                    closeB.addMouseListener(new MouseAdapter() {<a name="line.255"></a>
+<FONT color="green">256</FONT>                                                      // add status bar text when mouse moves over button<a name="line.256"></a>
+<FONT color="green">257</FONT>                                                      public void mouseEntered(MouseEvent e) { statusBar.setText("Close the sequence browser"); }<a name="line.257"></a>
+<FONT color="green">258</FONT>                                                      // clear status bar when mouse moves off button<a name="line.258"></a>
+<FONT color="green">259</FONT>                                                      public void mouseExited(MouseEvent e) { statusBar.setText(""); }<a name="line.259"></a>
+<FONT color="green">260</FONT>                                             });<a name="line.260"></a>
+<FONT color="green">261</FONT>                                    closeB.addActionListener(new ActionListener() {<a name="line.261"></a>
+<FONT color="green">262</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.262"></a>
+<FONT color="green">263</FONT>                                                                    thisFrame.hide();<a name="line.263"></a>
+<FONT color="green">264</FONT>                                                      }<a name="line.264"></a>
+<FONT color="green">265</FONT>                                             });<a name="line.265"></a>
+<FONT color="green">266</FONT>                                    // add ToolBar<a name="line.266"></a>
+<FONT color="green">267</FONT>                                    sequenceP.addSeparator(new Dimension(15, 0));<a name="line.267"></a>
+<FONT color="green">268</FONT>                                    sequenceP.add(newB);<a name="line.268"></a>
+<FONT color="green">269</FONT>                                    sequenceP.addSeparator(new Dimension(30, 25));<a name="line.269"></a>
+<FONT color="green">270</FONT>                                    sequenceP.add(loadB);<a name="line.270"></a>
+<FONT color="green">271</FONT>                                    sequenceP.addSeparator(new Dimension(30, 25));<a name="line.271"></a>
+<FONT color="green">272</FONT>                                    /*<a name="line.272"></a>
+<FONT color="green">273</FONT>                                    sequenceP.add(saveB);<a name="line.273"></a>
+<FONT color="green">274</FONT>                                    sequenceP.addSeparator(new Dimension(30, 25));<a name="line.274"></a>
+<FONT color="green">275</FONT>                                    */<a name="line.275"></a>
+<FONT color="green">276</FONT>                                    sequenceP.add(new JLabel("Sequence: "));<a name="line.276"></a>
+<FONT color="green">277</FONT>                                    sequenceP.add(sequenceCB);<a name="line.277"></a>
+<FONT color="green">278</FONT>                                    sequenceP.addSeparator(new Dimension(15, 0));<a name="line.278"></a>
+<FONT color="green">279</FONT>                                    sequenceP.add(sourceB);<a name="line.279"></a>
+<FONT color="green">280</FONT>                                    sequenceP.addSeparator(new Dimension(30, 25));<a name="line.280"></a>
+<FONT color="green">281</FONT>                                    sequenceP.add(viewB);<a name="line.281"></a>
+<FONT color="green">282</FONT>                                    sequenceP.addSeparator(new Dimension(30, 25));<a name="line.282"></a>
+<FONT color="green">283</FONT>                                    sequenceP.add(deleteB);<a name="line.283"></a>
+<FONT color="green">284</FONT>                                    sequenceP.addSeparator(new Dimension(30, 25));<a name="line.284"></a>
+<FONT color="green">285</FONT>                                    sequenceP.add(closeB);<a name="line.285"></a>
+<FONT color="green">286</FONT>                                    sequenceP.addSeparator(new Dimension(15, 0));<a name="line.286"></a>
+<FONT color="green">287</FONT>                                    <a name="line.287"></a>
+<FONT color="green">288</FONT>                                    // ***** SETUP ATTRIBUTE INFO *****<a name="line.288"></a>
+<FONT color="green">289</FONT>                                    JPanel attributeP = new JPanel(new BorderLayout());<a name="line.289"></a>
+<FONT color="green">290</FONT>                                    // add attributes List<a name="line.290"></a>
+<FONT color="green">291</FONT>                                    attributeL = new JList();<a name="line.291"></a>
+<FONT color="green">292</FONT>                                    //                attributeL.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);<a name="line.292"></a>
+<FONT color="green">293</FONT>                                    attributeL.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);<a name="line.293"></a>
+<FONT color="green">294</FONT>                                    attributeL.addListSelectionListener(new ListSelectionListener() {<a name="line.294"></a>
+<FONT color="green">295</FONT>                                                      public void valueChanged(ListSelectionEvent e) {<a name="line.295"></a>
+<FONT color="green">296</FONT>                                                                    if (e.getValueIsAdjusting()) return;<a name="line.296"></a>
+<FONT color="green">297</FONT>                                                                    <a name="line.297"></a>
+<FONT color="green">298</FONT>                                                                    JList list = (JList) e.getSource();<a name="line.298"></a>
+<FONT color="green">299</FONT>                                                                    if (list.isSelectionEmpty()) {<a name="line.299"></a>
+<FONT color="green">300</FONT>                                                                             // disable the "Delete" button if no selection<a name="line.300"></a>
+<FONT color="green">301</FONT>                                                                             editAttributeB.setEnabled(false);<a name="line.301"></a>
+<FONT color="green">302</FONT>                                                                             delAttributeB.setEnabled(false);<a name="line.302"></a>
+<FONT color="green">303</FONT>                                                                    } else {<a name="line.303"></a>
+<FONT color="green">304</FONT>                                                                             // enable the "Delete" button if something selected<a name="line.304"></a>
+<FONT color="green">305</FONT>                                                                             editAttributeB.setEnabled(true);<a name="line.305"></a>
+<FONT color="green">306</FONT>                                                                             delAttributeB.setEnabled(true);<a name="line.306"></a>
+<FONT color="green">307</FONT>                                                                    }<a name="line.307"></a>
+<FONT color="green">308</FONT>                                                      }<a name="line.308"></a>
+<FONT color="green">309</FONT>                                             });<a name="line.309"></a>
+<FONT color="green">310</FONT>                                    JScrollPane attributeSP = new JScrollPane(attributeL);<a name="line.310"></a>
+<FONT color="green">311</FONT>                                    attributeP.add(attributeSP, BorderLayout.CENTER);<a name="line.311"></a>
+<FONT color="green">312</FONT>                                    // add button sub-panel<a name="line.312"></a>
+<FONT color="green">313</FONT>                                    JPanel attributeBP = new JPanel(new GridLayout(1,0,5,5));<a name="line.313"></a>
+<FONT color="green">314</FONT>                                    // add attributes "add" Button<a name="line.314"></a>
+<FONT color="green">315</FONT>                                    addAttributeB = new JButton(new ImageIcon("icons/new.png"));<a name="line.315"></a>
+<FONT color="green">316</FONT>                                    addAttributeB.setToolTipText("Add Attribute");<a name="line.316"></a>
+<FONT color="green">317</FONT>                                    addAttributeB.addActionListener(new ActionListener() {<a name="line.317"></a>
+<FONT color="green">318</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.318"></a>
+<FONT color="green">319</FONT>                                                                    if (sequence == null) return;<a name="line.319"></a>
+<FONT color="green">320</FONT>                                                                    <a name="line.320"></a>
+<FONT color="green">321</FONT>                                                                    String[] labels = {" Key:", " Value:"};<a name="line.321"></a>
+<FONT color="green">322</FONT>                                                                    // use this to get the return value from FieldEditDialog<a name="line.322"></a>
+<FONT color="green">323</FONT>                                                                    ArrayList textFields = new ArrayList();<a name="line.323"></a>
+<FONT color="green">324</FONT>                                                                    textFields.add(new JTextField(20));<a name="line.324"></a>
+<FONT color="green">325</FONT>                                                                    textFields.add(new JTextField(20));<a name="line.325"></a>
+<FONT color="green">326</FONT>                                                                    new FieldEditDialog("Add Attribute", labels, textFields);<a name="line.326"></a>
+<FONT color="green">327</FONT>                                                                    <a name="line.327"></a>
+<FONT color="green">328</FONT>                                                                    // check "exit code" for FieldEditDialog, if false then exit<a name="line.328"></a>
+<FONT color="green">329</FONT>                                                                    Boolean exitCode = (Boolean) textFields.get(textFields.size()-1);<a name="line.329"></a>
+<FONT color="green">330</FONT>                                                                    if (! exitCode.booleanValue()) return;<a name="line.330"></a>
+<FONT color="green">331</FONT>    <a name="line.331"></a>
+<FONT color="green">332</FONT>                                                                    JTextField tf = (JTextField) textFields.get(0);<a name="line.332"></a>
+<FONT color="green">333</FONT>                                                                    String key = tf.getText();<a name="line.333"></a>
+<FONT color="green">334</FONT>                                                                    if (key.length() &gt; 0) { // make sure a key is valid<a name="line.334"></a>
+<FONT color="green">335</FONT>                                                                             tf = (JTextField) textFields.get(1);  // get value<a name="line.335"></a>
+<FONT color="green">336</FONT>                                                                             String value = tf.getText();<a name="line.336"></a>
+<FONT color="green">337</FONT>                                                                             String msg = "getSequence(\"" + sequence.getID() + "\")";<a name="line.337"></a>
+<FONT color="green">338</FONT>                                                                             msg += ".addAttribute(\"" + key + "\", \"" + value + "\")";<a name="line.338"></a>
+<FONT color="green">339</FONT>                                                                             Root.runCommand(msg, true);<a name="line.339"></a>
+<FONT color="green">340</FONT>                                                                             updateAttributes();<a name="line.340"></a>
+<FONT color="green">341</FONT>                                                                    }<a name="line.341"></a>
+<FONT color="green">342</FONT>                                                      }<a name="line.342"></a>
+<FONT color="green">343</FONT>                                             });<a name="line.343"></a>
+<FONT color="green">344</FONT>                                    attributeBP.add(addAttributeB);<a name="line.344"></a>
+<FONT color="green">345</FONT>                                    // add attributes "edit" Button<a name="line.345"></a>
+<FONT color="green">346</FONT>                                    editAttributeB = new JButton(new ImageIcon("icons/edit.png"));<a name="line.346"></a>
+<FONT color="green">347</FONT>                                    editAttributeB.setToolTipText("Edit Attribute");<a name="line.347"></a>
+<FONT color="green">348</FONT>                                    editAttributeB.setEnabled(false);<a name="line.348"></a>
+<FONT color="green">349</FONT>                                    editAttributeB.addActionListener(new ActionListener() {<a name="line.349"></a>
+<FONT color="green">350</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.350"></a>
+<FONT color="green">351</FONT>                                                                    StringTokenizer st = new StringTokenizer((String) <a name="line.351"></a>
+<FONT color="green">352</FONT>                                                                                                                                                                              attributeL.getSelectedValue(),<a name="line.352"></a>
+<FONT color="green">353</FONT>                                                                                                                                                                              ":", true);<a name="line.353"></a>
+<FONT color="green">354</FONT>                                                                    String key = st.nextToken();<a name="line.354"></a>
+<FONT color="green">355</FONT>                                                                    String value = st.nextToken(); // this is the ":"<a name="line.355"></a>
+<FONT color="green">356</FONT>                                                                    value = st.nextToken(); // this is the actual value<a name="line.356"></a>
+<FONT color="green">357</FONT>                                                                    value = value.substring(1, value.length());  // remove leading " "<a name="line.357"></a>
+<FONT color="green">358</FONT>                                                                    // add any remaining tokens<a name="line.358"></a>
+<FONT color="green">359</FONT>                                                                    while (st.hasMoreTokens()) { <a name="line.359"></a>
+<FONT color="green">360</FONT>                                                                             value += st.nextToken(); <a name="line.360"></a>
+<FONT color="green">361</FONT>                                                                    }<a name="line.361"></a>
+<FONT color="green">362</FONT>                                                                    <a name="line.362"></a>
+<FONT color="green">363</FONT>                                                                    String[] labels = {" Key:", " Value:"};<a name="line.363"></a>
+<FONT color="green">364</FONT>                                                                    // use this to get the return value from FieldEditDialog<a name="line.364"></a>
+<FONT color="green">365</FONT>                                                                    ArrayList textFields = new ArrayList();<a name="line.365"></a>
+<FONT color="green">366</FONT>                                                                    JTextField tf = new JTextField(20);<a name="line.366"></a>
+<FONT color="green">367</FONT>                                                                    tf.setText(key);<a name="line.367"></a>
+<FONT color="green">368</FONT>                                                                    tf.setEditable(false);<a name="line.368"></a>
+<FONT color="green">369</FONT>                                                                    textFields.add(tf);<a name="line.369"></a>
+<FONT color="green">370</FONT>                                                                    tf = new JTextField(20);<a name="line.370"></a>
+<FONT color="green">371</FONT>                                                                    tf.setText(value);<a name="line.371"></a>
+<FONT color="green">372</FONT>                                                                    textFields.add(tf);<a name="line.372"></a>
+<FONT color="green">373</FONT>                                                                    new FieldEditDialog("Edit Attribute", labels, textFields);<a name="line.373"></a>
+<FONT color="green">374</FONT>                                                                    <a name="line.374"></a>
+<FONT color="green">375</FONT>                                                                    // check "exit code" for FieldEditDialog, if false then exit<a name="line.375"></a>
+<FONT color="green">376</FONT>                                                                    Boolean exitCode = (Boolean) textFields.get(textFields.size()-1);<a name="line.376"></a>
+<FONT color="green">377</FONT>                                                                    if (! exitCode.booleanValue()) return;<a name="line.377"></a>
+<FONT color="green">378</FONT>    <a name="line.378"></a>
+<FONT color="green">379</FONT>                                                                    tf = (JTextField) textFields.get(1);<a name="line.379"></a>
+<FONT color="green">380</FONT>                                                                    String newValue = tf.getText();<a name="line.380"></a>
+<FONT color="green">381</FONT>                                                                    if (value.compareTo(newValue) != 0) { // make sure value changed<a name="line.381"></a>
+<FONT color="green">382</FONT>                                                                             String msg = "getSequence(\"" + sequence.getID() + "\")";<a name="line.382"></a>
+<FONT color="green">383</FONT>                                                                             msg += ".addAttribute(\"" + key + "\", \"" + newValue + "\")";<a name="line.383"></a>
+<FONT color="green">384</FONT>                                                                             Root.runCommand(msg, true);<a name="line.384"></a>
+<FONT color="green">385</FONT>                                                                             updateAttributes();<a name="line.385"></a>
+<FONT color="green">386</FONT>                                                                    }<a name="line.386"></a>
+<FONT color="green">387</FONT>                                                      }<a name="line.387"></a>
+<FONT color="green">388</FONT>                                             });<a name="line.388"></a>
+<FONT color="green">389</FONT>                                    attributeBP.add(editAttributeB);<a name="line.389"></a>
+<FONT color="green">390</FONT>                                    // add attributes "delete" Button<a name="line.390"></a>
+<FONT color="green">391</FONT>                                    delAttributeB = new JButton(new ImageIcon("icons/delete.png"));<a name="line.391"></a>
+<FONT color="green">392</FONT>                                    delAttributeB.setToolTipText("Delete Attribute");<a name="line.392"></a>
+<FONT color="green">393</FONT>                                    delAttributeB.setEnabled(false);<a name="line.393"></a>
+<FONT color="green">394</FONT>                                    delAttributeB.addActionListener(new ActionListener() {<a name="line.394"></a>
+<FONT color="green">395</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.395"></a>
+<FONT color="green">396</FONT>                                                                    String msg = "Are you sure you want to delete the following attribute?\n\t";<a name="line.396"></a>
+<FONT color="green">397</FONT>                                                                    msg += attributeL.getSelectedValue();<a name="line.397"></a>
+<FONT color="green">398</FONT>                                                                    Object[] options = {"Delete Attribute", "Cancel"};<a name="line.398"></a>
+<FONT color="green">399</FONT>                                                                    int flag = JOptionPane.showOptionDialog(null, msg,<a name="line.399"></a>
+<FONT color="green">400</FONT>                                                                                                                                                                             "Delete Confirmation",<a name="line.400"></a>
+<FONT color="green">401</FONT>                                                                                                                                                                             JOptionPane.YES_NO_OPTION,<a name="line.401"></a>
+<FONT color="green">402</FONT>                                                                                                                                                                             JOptionPane.QUESTION_MESSAGE,<a name="line.402"></a>
+<FONT color="green">403</FONT>                                                                                                                                                                             null,<a name="line.403"></a>
+<FONT color="green">404</FONT>                                                                                                                                                                             options,<a name="line.404"></a>
+<FONT color="green">405</FONT>                                                                                                                                                                             options[1]);<a name="line.405"></a>
+<FONT color="green">406</FONT>                                                                    if (flag == JOptionPane.YES_OPTION) { // "Delete"<a name="line.406"></a>
+<FONT color="green">407</FONT>                                                                             StringTokenizer st = new StringTokenizer((String) <a name="line.407"></a>
+<FONT color="green">408</FONT>                                                                                                                                                                                            attributeL.getSelectedValue(),<a name="line.408"></a>
+<FONT color="green">409</FONT>                                                                                                                                                                                            ":");<a name="line.409"></a>
+<FONT color="green">410</FONT>                                                                             String key = st.nextToken();<a name="line.410"></a>
+<FONT color="green">411</FONT>                                                                             msg = "getSequence(\"" + sequence.getID() + "\")";<a name="line.411"></a>
+<FONT color="green">412</FONT>                                                                             msg += ".delAttribute(\"" + key + "\")";<a name="line.412"></a>
+<FONT color="green">413</FONT>                                                                             Root.runCommand(msg, true);<a name="line.413"></a>
+<FONT color="green">414</FONT>                                                                             <a name="line.414"></a>
+<FONT color="green">415</FONT>                                                                             updateAttributes();<a name="line.415"></a>
+<FONT color="green">416</FONT>                                                                    }<a name="line.416"></a>
+<FONT color="green">417</FONT>                                                      }<a name="line.417"></a>
+<FONT color="green">418</FONT>                                             });<a name="line.418"></a>
+<FONT color="green">419</FONT>                                    attributeBP.add(delAttributeB);<a name="line.419"></a>
+<FONT color="green">420</FONT>                                    attributeP.add(attributeBP, BorderLayout.SOUTH);<a name="line.420"></a>
+<FONT color="green">421</FONT>                                    // add attributes Label<a name="line.421"></a>
+<FONT color="green">422</FONT>                                    attributeP.add(new JLabel(" Attributes:"), BorderLayout.NORTH);<a name="line.422"></a>
+<FONT color="green">423</FONT>                                    // provide a preferred size for attributesP<a name="line.423"></a>
+<FONT color="green">424</FONT>                                    attributeP.setPreferredSize(new Dimension(300, 200));<a name="line.424"></a>
+<FONT color="green">425</FONT>                                    <a name="line.425"></a>
+<FONT color="green">426</FONT>                                    // ***** SETUP SEQUENCE SPECs *****<a name="line.426"></a>
+<FONT color="green">427</FONT>                                    JPanel infoP = new JPanel(new BorderLayout());<a name="line.427"></a>
+<FONT color="green">428</FONT>                                    // add info sub-panel<a name="line.428"></a>
+<FONT color="green">429</FONT>                                    JPanel infoSP = new JPanel(new GridLayout(5,2,5,5));<a name="line.429"></a>
+<FONT color="green">430</FONT>                                    infoSP.add(new JLabel(" Offset:"));<a name="line.430"></a>
+<FONT color="green">431</FONT>                                    infoSP.add(offsetL);<a name="line.431"></a>
+<FONT color="green">432</FONT>                                    infoSP.add(new JLabel(" Min:"));<a name="line.432"></a>
+<FONT color="green">433</FONT>                                    infoSP.add(minL);<a name="line.433"></a>
+<FONT color="green">434</FONT>                                    infoSP.add(new JLabel(" Max:"));<a name="line.434"></a>
+<FONT color="green">435</FONT>                                    infoSP.add(maxL);<a name="line.435"></a>
+<FONT color="green">436</FONT>                                    infoSP.add(new JLabel(" Length:"));<a name="line.436"></a>
+<FONT color="green">437</FONT>                                    infoSP.add(lengthL);<a name="line.437"></a>
+<FONT color="green">438</FONT>                                    infoSP.add(new JLabel(" Data loaded:"));<a name="line.438"></a>
+<FONT color="green">439</FONT>                                    infoSP.add(loadDataL);<a name="line.439"></a>
+<FONT color="green">440</FONT>                                    infoP.add(infoSP, BorderLayout.CENTER);<a name="line.440"></a>
+<FONT color="green">441</FONT>                                    // add button sub-panel<a name="line.441"></a>
+<FONT color="green">442</FONT>                                    JPanel infoBP = new JPanel(new GridLayout(0,1,5,5));<a name="line.442"></a>
+<FONT color="green">443</FONT>                                    // add info "loadData" button<a name="line.443"></a>
+<FONT color="green">444</FONT>                                    JButton loadDataB = new JButton("(Re)Load Data");<a name="line.444"></a>
+<FONT color="green">445</FONT>                                    loadDataB.addActionListener(new ActionListener() {<a name="line.445"></a>
+<FONT color="green">446</FONT>                                                      public void actionPerformed(ActionEvent e) {<a name="line.446"></a>
+<FONT color="green">447</FONT>                                                                    String msg = "Are you sure you want to (re)load the sequence data?\n";<a name="line.447"></a>
+<FONT color="green">448</FONT>                                                                    msg += "This may take a while for large data files.";<a name="line.448"></a>
+<FONT color="green">449</FONT>                                                                    Object[] options = {"Load", "Cancel"};<a name="line.449"></a>
+<FONT color="green">450</FONT>                                                                    int flag = JOptionPane.showOptionDialog(null, msg,<a name="line.450"></a>
+<FONT color="green">451</FONT>                                                                                                                                                                             "Load Data Confirmation",<a name="line.451"></a>
+<FONT color="green">452</FONT>                                                                                                                                                                             JOptionPane.YES_NO_OPTION,<a name="line.452"></a>
+<FONT color="green">453</FONT>                                                                                                                                                                             JOptionPane.QUESTION_MESSAGE,<a name="line.453"></a>
+<FONT color="green">454</FONT>                                                                                                                                                                             null,<a name="line.454"></a>
+<FONT color="green">455</FONT>                                                                                                                                                                             options,<a name="line.455"></a>
+<FONT color="green">456</FONT>                                                                                                                                                                             options[1]);<a name="line.456"></a>
+<FONT color="green">457</FONT>                                                                    if (flag == JOptionPane.YES_OPTION) { // "Load"<a name="line.457"></a>
+<FONT color="green">458</FONT>                                                                             if (sequence != null) {<a name="line.458"></a>
+<FONT color="green">459</FONT>                                                                                      sequence.reloadData();<a name="line.459"></a>
+<FONT color="green">460</FONT>                                                                                      loadDataL.setText(Boolean.toString(sequence.isDataLoaded()));<a name="line.460"></a>
+<FONT color="green">461</FONT>                                                                                      if (sequence.isDataLoaded()) {<a name="line.461"></a>
+<FONT color="green">462</FONT>                                                                                                    maxL.setText(Integer.toString(sequence.getMax()));<a name="line.462"></a>
+<FONT color="green">463</FONT>                                                                                                    lengthL.setText(Integer.toString(sequence.length()));<a name="line.463"></a>
+<FONT color="green">464</FONT>                                                                                      }<a name="line.464"></a>
+<FONT color="green">465</FONT>                                                                             }<a name="line.465"></a>
+<FONT color="green">466</FONT>                                                                    }<a name="line.466"></a>
+<FONT color="green">467</FONT>                                                      }<a name="line.467"></a>
+<FONT color="green">468</FONT>                                             });<a name="line.468"></a>
+<FONT color="green">469</FONT>                                    infoBP.add(loadDataB);<a name="line.469"></a>
+<FONT color="green">470</FONT>                                    infoP.add(infoBP, BorderLayout.SOUTH);<a name="line.470"></a>
+<FONT color="green">471</FONT>                                    <a name="line.471"></a>
+<FONT color="green">472</FONT>                                    // ***** SETUP TRACK INFO *****<a name="line.472"></a>
+<FONT color="green">473</FONT>                                    JPanel trackP = new JPanel(new BorderLayout());<a name="line.473"></a>
+<FONT color="green">474</FONT>                                    // setup list of Tracks for selected sequence<a name="line.474"></a>
+<FONT color="green">475</FONT>                                    trackL = new JList();<a name="line.475"></a>
+<FONT color="green">476</FONT>                                    trackL.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);<a name="line.476"></a>
+<FONT color="green">477</FONT>                                    trackL.setToolTipText("Double click on a Track name to edit the item in a Track Browser");<a name="line.477"></a>
+<FONT color="green">478</FONT>                                    /*<a name="line.478"></a>
+<FONT color="green">479</FONT>                                      trackL.addListSelectionListener(new ListSelectionListener() {<a name="line.479"></a>
+<FONT color="green">480</FONT>                                      public void valueChanged(ListSelectionEvent e) {<a name="line.480"></a>
+<FONT color="green">481</FONT>                                      if (e.getValueIsAdjusting()) return;<a name="line.481"></a>
+<FONT color="green">482</FONT>                                      <a name="line.482"></a>
+<FONT color="green">483</FONT>                                      JList list = (JList) e.getSource();<a name="line.483"></a>
+<FONT color="green">484</FONT>                                      if (list.isSelectionEmpty()) {<a name="line.484"></a>
+<FONT color="green">485</FONT>                                      statusBar.setText("");<a name="line.485"></a>
+<FONT color="green">486</FONT>                                      } else {<a name="line.486"></a>
+<FONT color="green">487</FONT>                                      Track track = ObjectHandles.getTrack((String) tracks[index]);<a name="line.487"></a>
+<FONT color="green">488</FONT>                                      String msg = "Track ID: " + track.getID();<a name="line.488"></a>
+<FONT color="green">489</FONT>                                      msg += " :: Num Features: " + track.numFeatures();<a name="line.489"></a>
+<FONT color="green">490</FONT>                                      msg += " :: Length: " + track.length();<a name="line.490"></a>
+<FONT color="green">491</FONT>                                      msg += " :: Attributes: " + track.getAttributes();<a name="line.491"></a>
+<FONT color="green">492</FONT>                                      statusBar.setText(msg);<a name="line.492"></a>
+<FONT color="green">493</FONT>                                      }<a name="line.493"></a>
+<FONT color="green">494</FONT>                                      }<a name="line.494"></a>
+<FONT color="green">495</FONT>                                      });<a name="line.495"></a>
+<FONT color="green">496</FONT>                                    */<a name="line.496"></a>
+<FONT color="green">497</FONT>                                    trackL.addMouseMotionListener(new MouseMotionListener() {<a name="line.497"></a>
+<FONT color="green">498</FONT>                                                      public void mouseMoved(MouseEvent e) {<a name="line.498"></a>
+<FONT color="green">499</FONT>                                                                    if (tracks.length &gt; 0) {<a name="line.499"></a>
+<FONT color="green">500</FONT>                                                                             int index = trackL.locationToIndex(e.getPoint());<a name="line.500"></a>
+<FONT color="green">501</FONT>                                                                             if (index &gt; -1) {<a name="line.501"></a>
+<FONT color="green">502</FONT>                                                                                      Track track = ObjectHandles.getTrack((String) tracks[index]);<a name="line.502"></a>
+<FONT color="green">503</FONT>                                                                                      String msg = "Track ID: " + track.getID();<a name="line.503"></a>
+<FONT color="green">504</FONT>                                                                                      msg += " :: Num Features: " + track.numFeatures();<a name="line.504"></a>
+<FONT color="green">505</FONT>                                                                                      msg += " :: Length: " + track.length();<a name="line.505"></a>
+<FONT color="green">506</FONT>                                                                                      msg += " :: Attributes: " + track.getAttributes();<a name="line.506"></a>
+<FONT color="green">507</FONT>                                                                                      statusBar.setText(msg);<a name="line.507"></a>
+<FONT color="green">508</FONT>                                                                             }<a name="line.508"></a>
+<FONT color="green">509</FONT>                                                                    } else {<a name="line.509"></a>
+<FONT color="green">510</FONT>                                                                             statusBar.setText("No tracks with features on this sequence.");<a name="line.510"></a>
+<FONT color="green">511</FONT>                                                                    }                                                               <a name="line.511"></a>
+<FONT color="green">512</FONT>                                                      }<a name="line.512"></a>
+<FONT color="green">513</FONT>                                                      public void mouseDragged(MouseEvent e) { ; }<a name="line.513"></a>
+<FONT color="green">514</FONT>                                             });<a name="line.514"></a>
+<FONT color="green">515</FONT>                                    trackL.addMouseListener(new MouseAdapter() {<a name="line.515"></a>
+<FONT color="green">516</FONT>                                                      // clear status bar when mouse moves out of trackL<a name="line.516"></a>
+<FONT color="green">517</FONT>                                                      public void mouseExited(MouseEvent e) {<a name="line.517"></a>
+<FONT color="green">518</FONT>                                                                    statusBar.setText("");<a name="line.518"></a>
+<FONT color="green">519</FONT>                                                      }<a name="line.519"></a>
+<FONT color="green">520</FONT>                                                      <a name="line.520"></a>
+<FONT color="green">521</FONT>                                                      public void mouseClicked(MouseEvent e) {<a name="line.521"></a>
+<FONT color="green">522</FONT>                                                                    if (e.getClickCount() == 2) {<a name="line.522"></a>
+<FONT color="green">523</FONT>                                                                             int index = trackL.locationToIndex(e.getPoint());<a name="line.523"></a>
+<FONT color="green">524</FONT>                                                                             <a name="line.524"></a>
+<FONT color="green">525</FONT>                                                                             if (index &gt; -1) {    // make sure there is a valid item<a name="line.525"></a>
+<FONT color="green">526</FONT>                                                                                      // launch the Track Browser through Root so<a name="line.526"></a>
+<FONT color="green">527</FONT>                                                                                      // that the command gets added to the history.<a name="line.527"></a>
+<FONT color="green">528</FONT>                                                                                      String id = (String) tracks[index];<a name="line.528"></a>
+<FONT color="green">529</FONT>                                                                                      String cmd = "trackBrowser(\"" + id + "\")";<a name="line.529"></a>
+<FONT color="green">530</FONT>                                                                                      Root.runCommand(cmd, true);<a name="line.530"></a>
+<FONT color="green">531</FONT>                                                                                      <a name="line.531"></a>
+<FONT color="green">532</FONT>                                                                                      /*<a name="line.532"></a>
+<FONT color="green">533</FONT>                                                                                             String msg = (ObjectHandles.getTrack((String) tracks[index])).toString();<a name="line.533"></a>
+<FONT color="green">534</FONT>                                                                                             JOptionPane.showMessageDialog(null, msg,<a name="line.534"></a>
+<FONT color="green">535</FONT>                                                                                             "Track Viewer",<a name="line.535"></a>
+<FONT color="green">536</FONT>                                                                                             JOptionPane.INFORMATION_MESSAGE);<a name="line.536"></a>
+<FONT color="green">537</FONT>                                                                                      */<a name="line.537"></a>
+<FONT color="green">538</FONT>                                                                             }<a name="line.538"></a>
+<FONT color="green">539</FONT>                                                                    }<a name="line.539"></a>
+<FONT color="green">540</FONT>                                                      }<a name="line.540"></a>
+<FONT color="green">541</FONT>                                             });<a name="line.541"></a>
+<FONT color="green">542</FONT>                                    JScrollPane trackSP = new JScrollPane(trackL);<a name="line.542"></a>
+<FONT color="green">543</FONT>                                    trackP.add(trackSP, BorderLayout.CENTER);<a name="line.543"></a>
+<FONT color="green">544</FONT>                                    // add Track Label<a name="line.544"></a>
+<FONT color="green">545</FONT>                                    trackP.add(new JLabel(" Tracks:"), BorderLayout.NORTH);<a name="line.545"></a>
+<FONT color="green">546</FONT>                                    trackP.add(infoP, BorderLayout.SOUTH);<a name="line.546"></a>
+<FONT color="green">547</FONT>                                    <a name="line.547"></a>
+<FONT color="green">548</FONT>                                    // setup split pane for Track/Feature Panels<a name="line.548"></a>
+<FONT color="green">549</FONT>                                    JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, <a name="line.549"></a>
+<FONT color="green">550</FONT>                                                                                                                                      attributeP, trackP);<a name="line.550"></a>
+<FONT color="green">551</FONT>                                    splitPane.setOneTouchExpandable(true);<a name="line.551"></a>
+<FONT color="green">552</FONT>                                    splitPane.setDividerLocation(300);<a name="line.552"></a>
+<FONT color="green">553</FONT>                                    // provide minimum sizes for the two components in the split pane<a name="line.553"></a>
+<FONT color="green">554</FONT>                                    Dimension minimumSize = new Dimension(150, 200);<a name="line.554"></a>
+<FONT color="green">555</FONT>                                    attributeP.setMinimumSize(minimumSize);<a name="line.555"></a>
+<FONT color="green">556</FONT>                                    trackP.setMinimumSize(minimumSize);<a name="line.556"></a>
+<FONT color="green">557</FONT>                                    // provide a preferred size for the split pane<a name="line.557"></a>
+<FONT color="green">558</FONT>                                    splitPane.setPreferredSize(new Dimension(400, 200));<a name="line.558"></a>
+<FONT color="green">559</FONT>                                    <a name="line.559"></a>
+<FONT color="green">560</FONT>                                    // add status bar at bottom of window<a name="line.560"></a>
+<FONT color="green">561</FONT>                                    JLabel statusBarSpacer = new JLabel(" ");<a name="line.561"></a>
+<FONT color="green">562</FONT>                                    statusBar = new JLabel(" ");<a name="line.562"></a>
+<FONT color="green">563</FONT>                                    JPanel statusBarP = new JPanel(false);<a name="line.563"></a>
+<FONT color="green">564</FONT>                                    statusBarP.setBorder(BorderFactory.createLoweredBevelBorder());<a name="line.564"></a>
+<FONT color="green">565</FONT>                                    statusBarP.setLayout(new BorderLayout());<a name="line.565"></a>
+<FONT color="green">566</FONT>                                    statusBarP.add(statusBarSpacer, BorderLayout.WEST);<a name="line.566"></a>
+<FONT color="green">567</FONT>                                    statusBarP.add(statusBar, BorderLayout.CENTER);<a name="line.567"></a>
+<FONT color="green">568</FONT>                                    <a name="line.568"></a>
+<FONT color="green">569</FONT>                                    getContentPane().add(sequenceP, BorderLayout.NORTH);<a name="line.569"></a>
+<FONT color="green">570</FONT>                                    getContentPane().add(splitPane, BorderLayout.CENTER);<a name="line.570"></a>
+<FONT color="green">571</FONT>                                    getContentPane().add(statusBarP, BorderLayout.SOUTH);<a name="line.571"></a>
+<FONT color="green">572</FONT>                                    pack();<a name="line.572"></a>
+<FONT color="green">573</FONT>                                    <a name="line.573"></a>
+<FONT color="green">574</FONT>                                    // set the default window size<a name="line.574"></a>
+<FONT color="green">575</FONT>                                    setSize(getSize().width + 50, getSize().height + 150);<a name="line.575"></a>
+<FONT color="green">576</FONT>                                    <a name="line.576"></a>
+<FONT color="green">577</FONT>                                    // initialize the browser to the current Sequence<a name="line.577"></a>
+<FONT color="green">578</FONT>                                    sequenceSelected((String) sequenceCB.getSelectedItem());<a name="line.578"></a>
+<FONT color="green">579</FONT>                                    <a name="line.579"></a>
+<FONT color="green">580</FONT>                                    // display the window<a name="line.580"></a>
+<FONT color="green">581</FONT>                                    show();<a name="line.581"></a>
+<FONT color="green">582</FONT>                      }<a name="line.582"></a>
+<FONT color="green">583</FONT>                      <a name="line.583"></a>
+<FONT color="green">584</FONT>                      /** <a name="line.584"></a>
+<FONT color="green">585</FONT>                            * This will update the SequenceBrowser for the currently selected<a name="line.585"></a>
+<FONT color="green">586</FONT>                            * Sequence.<a name="line.586"></a>
+<FONT color="green">587</FONT>                            */<a name="line.587"></a>
+<FONT color="green">588</FONT>                      private void sequenceSelected(String id) {<a name="line.588"></a>
+<FONT color="green">589</FONT>                                    if ((id == null) || (sequenceCB.getItemCount() == 0)) {<a name="line.589"></a>
+<FONT color="green">590</FONT>                                             // if null item or empty list, then clear display<a name="line.590"></a>
+<FONT color="green">591</FONT>                                             tracks = new Object[0];<a name="line.591"></a>
+<FONT color="green">592</FONT>                                             trackL.setListData(tracks);<a name="line.592"></a>
+<FONT color="green">593</FONT>                                             attributeL.setListData(new String[0]);<a name="line.593"></a>
+<FONT color="green">594</FONT>                                             <a name="line.594"></a>
+<FONT color="green">595</FONT>                                             offsetL.setText("");<a name="line.595"></a>
+<FONT color="green">596</FONT>                                             minL.setText("");<a name="line.596"></a>
+<FONT color="green">597</FONT>                                             maxL.setText("");<a name="line.597"></a>
+<FONT color="green">598</FONT>                                             lengthL.setText("");<a name="line.598"></a>
+<FONT color="green">599</FONT>                                             loadDataL.setText("");<a name="line.599"></a>
+<FONT color="green">600</FONT>                                             <a name="line.600"></a>
+<FONT color="green">601</FONT>                                             // make sure this is reset if no items in list<a name="line.601"></a>
+<FONT color="green">602</FONT>                                             sequence = null;<a name="line.602"></a>
+<FONT color="green">603</FONT>                                             <a name="line.603"></a>
+<FONT color="green">604</FONT>                                             return;<a name="line.604"></a>
+<FONT color="green">605</FONT>                                    }<a name="line.605"></a>
+<FONT color="green">606</FONT>                                    <a name="line.606"></a>
+<FONT color="green">607</FONT>                                    sequence = ObjectHandles.getSequence(id);<a name="line.607"></a>
+<FONT color="green">608</FONT>                                    <a name="line.608"></a>
+<FONT color="green">609</FONT>                                    updateAttributes();<a name="line.609"></a>
+<FONT color="green">610</FONT>                                    <a name="line.610"></a>
+<FONT color="green">611</FONT>                                    // this doesn't work because the panel won't register that<a name="line.611"></a>
+<FONT color="green">612</FONT>                                    // 'tracks' now points to a different list.<a name="line.612"></a>
+<FONT color="green">613</FONT>                                    //                tracks = ObjectHandles.getTrackBySequenceList(sequence.getID());<a name="line.613"></a>
+<FONT color="green">614</FONT>                                    Set tmpTrack = ObjectHandles.getTrackBySequenceList(sequence.getID());<a name="line.614"></a>
+<FONT color="green">615</FONT>                                    if (tmpTrack != null) { tracks = tmpTrack.toArray(); }<a name="line.615"></a>
+<FONT color="green">616</FONT>                                    else { tracks = new Object[0]; }<a name="line.616"></a>
+<FONT color="green">617</FONT>                                    trackL.setListData(tracks);<a name="line.617"></a>
+<FONT color="green">618</FONT>                                    <a name="line.618"></a>
+<FONT color="green">619</FONT>                                    offsetL.setText(Integer.toString(sequence.getOffset()));<a name="line.619"></a>
+<FONT color="green">620</FONT>                                    minL.setText(Integer.toString(sequence.getMin()));<a name="line.620"></a>
+<FONT color="green">621</FONT>                                    if (sequence.isDataLoaded()) {<a name="line.621"></a>
+<FONT color="green">622</FONT>                                             maxL.setText(Integer.toString(sequence.getMax()));<a name="line.622"></a>
+<FONT color="green">623</FONT>                                             lengthL.setText(Integer.toString(sequence.length()));<a name="line.623"></a>
+<FONT color="green">624</FONT>                                    } else {<a name="line.624"></a>
+<FONT color="green">625</FONT>                                             // don't force the loaded of data here<a name="line.625"></a>
+<FONT color="green">626</FONT>                                             maxL.setText("n/a");<a name="line.626"></a>
+<FONT color="green">627</FONT>                                             lengthL.setText("n/a");<a name="line.627"></a>
+<FONT color="green">628</FONT>                                    }<a name="line.628"></a>
+<FONT color="green">629</FONT>                                    loadDataL.setText(Boolean.toString(sequence.isDataLoaded()));<a name="line.629"></a>
+<FONT color="green">630</FONT>                      }<a name="line.630"></a>
+<FONT color="green">631</FONT>                      <a name="line.631"></a>
+<FONT color="green">632</FONT>                      /**<a name="line.632"></a>
+<FONT color="green">633</FONT>                            * This is separate from sequenceSelected() so it can be called<a name="line.633"></a>
+<FONT color="green">634</FONT>                            * separately for when the attributes are changed in the attribute<a name="line.634"></a>
+<FONT color="green">635</FONT>                            * panel.<a name="line.635"></a>
+<FONT color="green">636</FONT>                            */<a name="line.636"></a>
+<FONT color="green">637</FONT>                      private void updateAttributes() {<a name="line.637"></a>
+<FONT color="green">638</FONT>                                    // don't do anything if sequence not set<a name="line.638"></a>
+<FONT color="green">639</FONT>                                    if (sequence == null) return;<a name="line.639"></a>
+<FONT color="green">640</FONT>                                    <a name="line.640"></a>
+<FONT color="green">641</FONT>                                    HashMap attributes = sequence.getAttributes();<a name="line.641"></a>
+<FONT color="green">642</FONT>                                    if ((attributes == null) || (attributes.size() == 0)) {<a name="line.642"></a>
+<FONT color="green">643</FONT>                                             attributeL.setListData(new String[0]);<a name="line.643"></a>
+<FONT color="green">644</FONT>                                    } else {<a name="line.644"></a>
+<FONT color="green">645</FONT>                                             String[] attributeArray = new String[attributes.size()];<a name="line.645"></a>
+<FONT color="green">646</FONT>                                             Set keys = attributes.keySet();<a name="line.646"></a>
+<FONT color="green">647</FONT>                                             int cnt = 0;<a name="line.647"></a>
+<FONT color="green">648</FONT>                                             for (Iterator i = keys.iterator(); i.hasNext();) {<a name="line.648"></a>
+<FONT color="green">649</FONT>                                                      String key = (String) i.next();<a name="line.649"></a>
+<FONT color="green">650</FONT>                                                      attributeArray[cnt] = key + ": " + attributes.get(key);<a name="line.650"></a>
+<FONT color="green">651</FONT>                                                      cnt++;<a name="line.651"></a>
+<FONT color="green">652</FONT>                                             }<a name="line.652"></a>
+<FONT color="green">653</FONT>                                             attributeL.setListData(attributeArray);<a name="line.653"></a>
+<FONT color="green">654</FONT>                                    }<a name="line.654"></a>
+<FONT color="green">655</FONT>                      }<a name="line.655"></a>
+<FONT color="green">656</FONT>                      <a name="line.656"></a>
+<FONT color="green">657</FONT>                      /** <a name="line.657"></a>
+<FONT color="green">658</FONT>                            * Displays the Sequence data. <a name="line.658"></a>
+<FONT color="green">659</FONT>                            * @XXX Should see about using FieldEditDialog here.<a name="line.659"></a>
+<FONT color="green">660</FONT>                            */<a name="line.660"></a>
+<FONT color="green">661</FONT>                      class EditSourcePanel extends JFrame {<a name="line.661"></a>
+<FONT color="green">662</FONT>                                    EditSourcePanel thisFrame;<a name="line.662"></a>
+<FONT color="green">663</FONT>    <a name="line.663"></a>
+<FONT color="green">664</FONT>                                    JTextField loaderTF = new JTextField(20);<a name="line.664"></a>
+<FONT color="green">665</FONT>                                    JTextField argsTF = new JTextField(20);<a name="line.665"></a>
+<FONT color="green">666</FONT>    <a name="line.666"></a>
+<FONT color="green">667</FONT>                                    public EditSourcePanel() {<a name="line.667"></a>
+<FONT color="green">668</FONT>                                             super("Sequence Data");<a name="line.668"></a>
+<FONT color="green">669</FONT>                                             <a name="line.669"></a>
+<FONT color="green">670</FONT>                                             // keep pointer to self so can 'dispose' Frame below<a name="line.670"></a>
+<FONT color="green">671</FONT>                                             thisFrame = this;<a name="line.671"></a>
+<FONT color="green">672</FONT>                                             <a name="line.672"></a>
+<FONT color="green">673</FONT>                                             setDefaultCloseOperation(DISPOSE_ON_CLOSE);<a name="line.673"></a>
+<FONT color="green">674</FONT>                                             <a name="line.674"></a>
+<FONT color="green">675</FONT>                                             // setup text area to display data<a name="line.675"></a>
+<FONT color="green">676</FONT>                                             JPanel labelP = new JPanel(new GridLayout(0,1));<a name="line.676"></a>
+<FONT color="green">677</FONT>                                             JPanel editP = new JPanel(new GridLayout(0,1));<a name="line.677"></a>
+<FONT color="green">678</FONT>                                             labelP.add(new JLabel(" Source loader:"));<a name="line.678"></a>
+<FONT color="green">679</FONT>                                             labelP.add(new JLabel(" Loader arguments:"));<a name="line.679"></a>
+<FONT color="green">680</FONT>                                             updateValues();<a name="line.680"></a>
+<FONT color="green">681</FONT>                                             editP.add(loaderTF);<a name="line.681"></a>
+<FONT color="green">682</FONT>                                             editP.add(argsTF);<a name="line.682"></a>
+<FONT color="green">683</FONT>                                             JPanel contentP = new JPanel(new BorderLayout());<a name="line.683"></a>
+<FONT color="green">684</FONT>                                             contentP.setBorder(BorderFactory.createEmptyBorder(20, 20, 0, 20));<a name="line.684"></a>
+<FONT color="green">685</FONT>                                             contentP.add(labelP, BorderLayout.WEST);<a name="line.685"></a>
+<FONT color="green">686</FONT>                                             contentP.add(editP, BorderLayout.CENTER);<a name="line.686"></a>
+<FONT color="green">687</FONT>                                             <a name="line.687"></a>
+<FONT color="green">688</FONT>                                             // button panel<a name="line.688"></a>
+<FONT color="green">689</FONT>                                             JPanel buttonP = new JPanel(new BorderLayout());<a name="line.689"></a>
+<FONT color="green">690</FONT>                                             buttonP.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));<a name="line.690"></a>
+<FONT color="green">691</FONT>                                             JButton editB = new JButton("Edit");<a name="line.691"></a>
+<FONT color="green">692</FONT>                                             editB.addActionListener(new ActionListener() {<a name="line.692"></a>
+<FONT color="green">693</FONT>                                                                    public void actionPerformed(ActionEvent e) {<a name="line.693"></a>
+<FONT color="green">694</FONT>                                                                             if (sequence != null) {<a name="line.694"></a>
+<FONT color="green">695</FONT>                                                                                      GUIUtils.newSequenceLoader(sequence.getID());<a name="line.695"></a>
+<FONT color="green">696</FONT>                                                                                      updateValues();<a name="line.696"></a>
+<FONT color="green">697</FONT>                                                                             }<a name="line.697"></a>
+<FONT color="green">698</FONT>                                                                    }<a name="line.698"></a>
+<FONT color="green">699</FONT>                                                      });<a name="line.699"></a>
+<FONT color="green">700</FONT>                                             buttonP.add(editB, BorderLayout.WEST);<a name="line.700"></a>
+<FONT color="green">701</FONT>                                             JButton closeB = new JButton("Close");<a name="line.701"></a>
+<FONT color="green">702</FONT>                                             closeB.addActionListener(new ActionListener() {<a name="line.702"></a>
+<FONT color="green">703</FONT>                                                                    public void actionPerformed(ActionEvent e) {<a name="line.703"></a>
+<FONT color="green">704</FONT>                                                                             thisFrame.dispose();<a name="line.704"></a>
+<FONT color="green">705</FONT>                                                                    }<a name="line.705"></a>
+<FONT color="green">706</FONT>                                                      });<a name="line.706"></a>
+<FONT color="green">707</FONT>                                             buttonP.add(closeB, BorderLayout.EAST);<a name="line.707"></a>
+<FONT color="green">708</FONT>                                             <a name="line.708"></a>
+<FONT color="green">709</FONT>                                             getContentPane().setLayout(new BorderLayout());<a name="line.709"></a>
+<FONT color="green">710</FONT>                                             getContentPane().add(contentP, BorderLayout.NORTH);<a name="line.710"></a>
+<FONT color="green">711</FONT>                                             getContentPane().add(buttonP, BorderLayout.SOUTH);<a name="line.711"></a>
+<FONT color="green">712</FONT>                                             pack();<a name="line.712"></a>
+<FONT color="green">713</FONT>                                             <a name="line.713"></a>
+<FONT color="green">714</FONT>                                             // set the default window size<a name="line.714"></a>
+<FONT color="green">715</FONT>                                             setSize(getSize().width + 100, getSize().height + 30);<a name="line.715"></a>
+<FONT color="green">716</FONT>                                             <a name="line.716"></a>
+<FONT color="green">717</FONT>                                             // display the window<a name="line.717"></a>
+<FONT color="green">718</FONT>                                             //                             setVisible(true);<a name="line.718"></a>
+<FONT color="green">719</FONT>                                             show();<a name="line.719"></a>
+<FONT color="green">720</FONT>                                    }<a name="line.720"></a>
+<FONT color="green">721</FONT>    <a name="line.721"></a>
+<FONT color="green">722</FONT>                                    private void updateValues() {<a name="line.722"></a>
+<FONT color="green">723</FONT>                                             SequenceLoader sl = sequence.getDataLoader();<a name="line.723"></a>
+<FONT color="green">724</FONT>                                             if (sl == null) {<a name="line.724"></a>
+<FONT color="green">725</FONT>                                                      loaderTF.setText("not set");<a name="line.725"></a>
+<FONT color="green">726</FONT>                                             } else {<a name="line.726"></a>
+<FONT color="green">727</FONT>                                                      loaderTF.setText(sl.toString());<a name="line.727"></a>
+<FONT color="green">728</FONT>                                             }<a name="line.728"></a>
+<FONT color="green">729</FONT>                                             loaderTF.setEditable(false);<a name="line.729"></a>
+<FONT color="green">730</FONT>                                             argsTF.setText((sequence.getLoaderArgs()).toString());<a name="line.730"></a>
+<FONT color="green">731</FONT>                                             argsTF.setEditable(false);<a name="line.731"></a>
+<FONT color="green">732</FONT>                                    }<a name="line.732"></a>
+<FONT color="green">733</FONT>                      }<a name="line.733"></a>
+<FONT color="green">734</FONT>                      <a name="line.734"></a>
+<FONT color="green">735</FONT>                      /** Displays the Sequence data. */<a name="line.735"></a>
+<FONT color="green">736</FONT>                      class ViewSequencePanel extends JFrame {<a name="line.736"></a>
+<FONT color="green">737</FONT>                                    ViewSequencePanel thisFrame;<a name="line.737"></a>
+<FONT color="green">738</FONT>                                    <a name="line.738"></a>
+<FONT color="green">739</FONT>                                    public ViewSequencePanel() {<a name="line.739"></a>
+<FONT color="green">740</FONT>                                             super("Sequence Data");<a name="line.740"></a>
+<FONT color="green">741</FONT>                                             <a name="line.741"></a>
+<FONT color="green">742</FONT>                                             // keep pointer to self so can 'dispose' Frame below<a name="line.742"></a>
+<FONT color="green">743</FONT>                                             thisFrame = this;<a name="line.743"></a>
+<FONT color="green">744</FONT>                                             <a name="line.744"></a>
+<FONT color="green">745</FONT>                                             setDefaultCloseOperation(DISPOSE_ON_CLOSE);<a name="line.745"></a>
+<FONT color="green">746</FONT>                                             <a name="line.746"></a>
+<FONT color="green">747</FONT>                                             // setup text area to display data<a name="line.747"></a>
+<FONT color="green">748</FONT>                                             JTextArea textArea = new JTextArea(sequence.getDataFormatted());<a name="line.748"></a>
+<FONT color="green">749</FONT>                                             textArea.setLineWrap(false);<a name="line.749"></a>
+<FONT color="green">750</FONT>                                             textArea.setWrapStyleWord(false);<a name="line.750"></a>
+<FONT color="green">751</FONT>                                             textArea.setEditable(false);<a name="line.751"></a>
+<FONT color="green">752</FONT>                                             textArea.setFont(new Font("Courier", Font.PLAIN, 14));<a name="line.752"></a>
+<FONT color="green">753</FONT>                                             JScrollPane areaSP = new JScrollPane(textArea);<a name="line.753"></a>
+<FONT color="green">754</FONT>                                             areaSP.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);<a name="line.754"></a>
+<FONT color="green">755</FONT>                                             areaSP.setPreferredSize(new Dimension(580, 300));<a name="line.755"></a>
+<FONT color="green">756</FONT>                                             <a name="line.756"></a>
+<FONT color="green">757</FONT>                                             // setup close button<a name="line.757"></a>
+<FONT color="green">758</FONT>                                             JButton closeB = new JButton("Close Viewer");<a name="line.758"></a>
+<FONT color="green">759</FONT>                                             closeB.addActionListener(new ActionListener() {<a name="line.759"></a>
+<FONT color="green">760</FONT>                                                                    public void actionPerformed(ActionEvent e) {<a name="line.760"></a>
+<FONT color="green">761</FONT>                                                                             thisFrame.dispose();<a name="line.761"></a>
+<FONT color="green">762</FONT>                                                                    }<a name="line.762"></a>
+<FONT color="green">763</FONT>                                                      });<a name="line.763"></a>
+<FONT color="green">764</FONT>                                             <a name="line.764"></a>
+<FONT color="green">765</FONT>                                             getContentPane().setLayout(new BorderLayout());<a name="line.765"></a>
+<FONT color="green">766</FONT>                                             getContentPane().add(areaSP, BorderLayout.CENTER);<a name="line.766"></a>
+<FONT color="green">767</FONT>                                             getContentPane().add(closeB, BorderLayout.SOUTH);<a name="line.767"></a>
+<FONT color="green">768</FONT>                                             pack();<a name="line.768"></a>
+<FONT color="green">769</FONT>                                             <a name="line.769"></a>
+<FONT color="green">770</FONT>                                             // set the default window size<a name="line.770"></a>
+<FONT color="green">771</FONT>                                             setSize(getSize().width + 100, getSize().height + 30);<a name="line.771"></a>
+<FONT color="green">772</FONT>                                             <a name="line.772"></a>
+<FONT color="green">773</FONT>                                             // display the window<a name="line.773"></a>
+<FONT color="green">774</FONT>                                             //                             setVisible(true);<a name="line.774"></a>
+<FONT color="green">775</FONT>                                             show();<a name="line.775"></a>
+<FONT color="green">776</FONT>                                    }<a name="line.776"></a>
+<FONT color="green">777</FONT>                      }<a name="line.777"></a>
+<FONT color="green">778</FONT>                      <a name="line.778"></a>
+<FONT color="green">779</FONT>                      /** Handle newSequence dialog. */<a name="line.779"></a>
+<FONT color="green">780</FONT>                      class newSequencePanel extends JFrame {<a name="line.780"></a>
+<FONT color="green">781</FONT>                                    JTextField idTF;<a name="line.781"></a>
+<FONT color="green">782</FONT>                                    newSequencePanel thisFrame;<a name="line.782"></a>
+<FONT color="green">783</FONT>                                    <a name="line.783"></a>
+<FONT color="green">784</FONT>                                    public newSequencePanel() {<a name="line.784"></a>
+<FONT color="green">785</FONT>                                             super("New Sequence");<a name="line.785"></a>
+<FONT color="green">786</FONT>                                             <a name="line.786"></a>
+<FONT color="green">787</FONT>                                             // keep pointer to self so can 'dispose' Frame below<a name="line.787"></a>
+<FONT color="green">788</FONT>                                             thisFrame = this;<a name="line.788"></a>
+<FONT color="green">789</FONT>                                             <a name="line.789"></a>
+<FONT color="green">790</FONT>                                             setDefaultCloseOperation(DISPOSE_ON_CLOSE);<a name="line.790"></a>
+<FONT color="green">791</FONT>                                             <a name="line.791"></a>
+<FONT color="green">792</FONT>                                             // entry panel<a name="line.792"></a>
+<FONT color="green">793</FONT>                                             JPanel labelP = new JPanel(new GridLayout(0,1));<a name="line.793"></a>
+<FONT color="green">794</FONT>                                             JPanel editP = new JPanel(new GridLayout(0,1));<a name="line.794"></a>
+<FONT color="green">795</FONT>                                             idTF = new JTextField(20);<a name="line.795"></a>
+<FONT color="green">796</FONT>                                             labelP.add(new JLabel(" ID:"));<a name="line.796"></a>
+<FONT color="green">797</FONT>                                             editP.add(idTF);<a name="line.797"></a>
+<FONT color="green">798</FONT>                                             JPanel contentP = new JPanel(new BorderLayout());<a name="line.798"></a>
+<FONT color="green">799</FONT>                                             contentP.setBorder(BorderFactory.createEmptyBorder(20, 20, 0, 20));<a name="line.799"></a>
+<FONT color="green">800</FONT>                                             contentP.add(labelP, BorderLayout.WEST);<a name="line.800"></a>
+<FONT color="green">801</FONT>                                             contentP.add(editP, BorderLayout.CENTER);<a name="line.801"></a>
+<FONT color="green">802</FONT>                                             <a name="line.802"></a>
+<FONT color="green">803</FONT>                                             // button panel<a name="line.803"></a>
+<FONT color="green">804</FONT>                                             JPanel buttonP = new JPanel(new BorderLayout());<a name="line.804"></a>
+<FONT color="green">805</FONT>                                             buttonP.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));<a name="line.805"></a>
+<FONT color="green">806</FONT>                                             JButton addB = new JButton("Create");<a name="line.806"></a>
+<FONT color="green">807</FONT>                                             addB.setActionCommand("Create");<a name="line.807"></a>
+<FONT color="green">808</FONT>                                             addB.addActionListener(new ActionListener() {<a name="line.808"></a>
+<FONT color="green">809</FONT>                                                                    public void actionPerformed(ActionEvent e) {<a name="line.809"></a>
+<FONT color="green">810</FONT>                                                                             String id = idTF.getText().trim();<a name="line.810"></a>
+<FONT color="green">811</FONT>                                                                             <a name="line.811"></a>
+<FONT color="green">812</FONT>                                                                             String msg = "newSequence(\"" + id + "\")";<a name="line.812"></a>
+<FONT color="green">813</FONT>                                                                             <a name="line.813"></a>
+<FONT color="green">814</FONT>                                                                             // add command to history but don't run via console.<a name="line.814"></a>
+<FONT color="green">815</FONT>                                                                             // instead we're running it here so we can return a<a name="line.815"></a>
+<FONT color="green">816</FONT>                                                                             // reference to the Set of Sequences loaded<a name="line.816"></a>
+<FONT color="green">817</FONT>                                                                             Root.runCommand(msg, false);<a name="line.817"></a>
+<FONT color="green">818</FONT>                                                                             <a name="line.818"></a>
+<FONT color="green">819</FONT>                                                                             // create new sequence here<a name="line.819"></a>
+<FONT color="green">820</FONT>                                                                             sequence = new Sequence(id);<a name="line.820"></a>
+<FONT color="green">821</FONT>                                                                             // don't use 'id' here because it will have<a name="line.821"></a>
+<FONT color="green">822</FONT>                                                                             // been changed when creating the Sequence, if<a name="line.822"></a>
+<FONT color="green">823</FONT>                                                                             // the ID already existed<a name="line.823"></a>
+<FONT color="green">824</FONT>                                                                             sequenceCB.setSelectedItem(sequence.getID());<a name="line.824"></a>
+<FONT color="green">825</FONT>                                                                             <a name="line.825"></a>
+<FONT color="green">826</FONT>                                                                             thisFrame.dispose();                                                                    <a name="line.826"></a>
+<FONT color="green">827</FONT>                                                                    }<a name="line.827"></a>
+<FONT color="green">828</FONT>                                                      });<a name="line.828"></a>
+<FONT color="green">829</FONT>                                             buttonP.add(addB, BorderLayout.WEST);<a name="line.829"></a>
+<FONT color="green">830</FONT>                                             JButton cancelB = new JButton("Cancel");<a name="line.830"></a>
+<FONT color="green">831</FONT>                                             cancelB.setActionCommand("Cancel");<a name="line.831"></a>
+<FONT color="green">832</FONT>                                             cancelB.addActionListener(new ActionListener() {<a name="line.832"></a>
+<FONT color="green">833</FONT>                                                                    public void actionPerformed(ActionEvent e) {<a name="line.833"></a>
+<FONT color="green">834</FONT>                                                                             thisFrame.dispose();<a name="line.834"></a>
+<FONT color="green">835</FONT>                                                                    }<a name="line.835"></a>
+<FONT color="green">836</FONT>                                                      });<a name="line.836"></a>
+<FONT color="green">837</FONT>                                             buttonP.add(cancelB, BorderLayout.EAST);<a name="line.837"></a>
+<FONT color="green">838</FONT>                                             <a name="line.838"></a>
+<FONT color="green">839</FONT>                                             getContentPane().setLayout(new BorderLayout());<a name="line.839"></a>
+<FONT color="green">840</FONT>                                             getContentPane().add(contentP, BorderLayout.NORTH);<a name="line.840"></a>
+<FONT color="green">841</FONT>                                             getContentPane().add(buttonP, BorderLayout.SOUTH);<a name="line.841"></a>
+<FONT color="green">842</FONT>                                             pack();<a name="line.842"></a>
+<FONT color="green">843</FONT>                                             <a name="line.843"></a>
+<FONT color="green">844</FONT>                                             // set the default window size<a name="line.844"></a>
+<FONT color="green">845</FONT>                                             setSize(getSize().width + 100, getSize().height + 30);<a name="line.845"></a>
+<FONT color="green">846</FONT>                                             <a name="line.846"></a>
+<FONT color="green">847</FONT>                                             // display the window<a name="line.847"></a>
+<FONT color="green">848</FONT>                                             //                             setVisible(true);<a name="line.848"></a>
+<FONT color="green">849</FONT>                                             show();<a name="line.849"></a>
+<FONT color="green">850</FONT>                                    }<a name="line.850"></a>
+<FONT color="green">851</FONT>                      }<a name="line.851"></a>
+<FONT color="green">852</FONT>    <a name="line.852"></a>
+<FONT color="green">853</FONT>                      public void selectSequence(String id) {<a name="line.853"></a>
+<FONT color="green">854</FONT>                                    if ((id.length() == 0) || (sequenceCB.getItemCount() == 0)) return;<a name="line.854"></a>
+<FONT color="green">855</FONT>                                    int index = ObjectHandles.getSequenceList().getIndexOf(id);<a name="line.855"></a>
+<FONT color="green">856</FONT>                                    // only change selection if valid ID<a name="line.856"></a>
+<FONT color="green">857</FONT>                                    if (index &gt; -1) {<a name="line.857"></a>
+<FONT color="green">858</FONT>                                             sequenceCB.setSelectedIndex(index);<a name="line.858"></a>
+<FONT color="green">859</FONT>                                    } else {<a name="line.859"></a>
+<FONT color="green">860</FONT>                                             GloDBUtils.printMsg("Invalid sequence id (\"" + id + "\").", GloDBUtils.WARNING);<a name="line.860"></a>
+<FONT color="green">861</FONT>                                    }<a name="line.861"></a>
+<FONT color="green">862</FONT>                      }<a name="line.862"></a>
+<FONT color="green">863</FONT>             }<a name="line.863"></a>
+<FONT color="green">864</FONT>    } // SequenceBrowser.java<a name="line.864"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

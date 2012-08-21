@@ -1,0 +1,437 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright 2007, 2012 Stephen Fisher and Junhyong Kim, University of<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Pennsylvania.<a name="line.3"></a>
+<FONT color="green">004</FONT>     *<a name="line.4"></a>
+<FONT color="green">005</FONT>     * This file is part of Glo-DB.<a name="line.5"></a>
+<FONT color="green">006</FONT>     * <a name="line.6"></a>
+<FONT color="green">007</FONT>     * Glo-DB is free software: you can redistribute it and/or modify it<a name="line.7"></a>
+<FONT color="green">008</FONT>     * under the terms of the GNU General Public License as published by<a name="line.8"></a>
+<FONT color="green">009</FONT>     * the Free Software Foundation, either version 3 of the License, or<a name="line.9"></a>
+<FONT color="green">010</FONT>     * (at your option) any later version.<a name="line.10"></a>
+<FONT color="green">011</FONT>     * <a name="line.11"></a>
+<FONT color="green">012</FONT>     * Glo-DB is distributed in the hope that it will be useful, but<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.13"></a>
+<FONT color="green">014</FONT>     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU<a name="line.14"></a>
+<FONT color="green">015</FONT>     * General Public License for more details.<a name="line.15"></a>
+<FONT color="green">016</FONT>     * <a name="line.16"></a>
+<FONT color="green">017</FONT>     * You should have received a copy of the GNU General Public License<a name="line.17"></a>
+<FONT color="green">018</FONT>     * along with Glo-DB. If not, see &lt;http://www.gnu.org/licenses/&gt;.<a name="line.18"></a>
+<FONT color="green">019</FONT>     *<a name="line.19"></a>
+<FONT color="green">020</FONT>     * @(#)ObjectHandles.java<a name="line.20"></a>
+<FONT color="green">021</FONT>     */<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    package edu.upenn.gloDB;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.util.HashMap;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.util.HashSet;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.util.Set;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.util.TreeSet;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.util.Iterator;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import javax.swing.*;<a name="line.30"></a>
+<FONT color="green">031</FONT>    <a name="line.31"></a>
+<FONT color="green">032</FONT>    /**<a name="line.32"></a>
+<FONT color="green">033</FONT>     * ObjectHandles.<a name="line.33"></a>
+<FONT color="green">034</FONT>     *<a name="line.34"></a>
+<FONT color="green">035</FONT>     * @author  Stephen Fisher<a name="line.35"></a>
+<FONT color="green">036</FONT>     * @version $Id: ObjectHandles.java,v 1.15.2.13 2007/03/01 21:17:33 fisher Exp $<a name="line.36"></a>
+<FONT color="green">037</FONT>     */<a name="line.37"></a>
+<FONT color="green">038</FONT>    <a name="line.38"></a>
+<FONT color="green">039</FONT>    public class ObjectHandles { <a name="line.39"></a>
+<FONT color="green">040</FONT>    <a name="line.40"></a>
+<FONT color="green">041</FONT>             /** <a name="line.41"></a>
+<FONT color="green">042</FONT>              * The HashMap of all existing Tracks.  It is made public so that<a name="line.42"></a>
+<FONT color="green">043</FONT>              * the user can directly access the Tracks to test if a specific<a name="line.43"></a>
+<FONT color="green">044</FONT>              * Track is in the set and to remove Tracks from the HashMap in<a name="line.44"></a>
+<FONT color="green">045</FONT>              * the case of deleting the Track.  When deleting Tracks, it is<a name="line.45"></a>
+<FONT color="green">046</FONT>              * necessary to remove the Track from the trackPool.  While new<a name="line.46"></a>
+<FONT color="green">047</FONT>              * Tracks are added to the trackPool by default, it is possible to<a name="line.47"></a>
+<FONT color="green">048</FONT>              * create a Track and not have it added to the trackPool.  This<a name="line.48"></a>
+<FONT color="green">049</FONT>              * should be avoided as certain functions require the Track to<a name="line.49"></a>
+<FONT color="green">050</FONT>              * exist in the trackPool.<a name="line.50"></a>
+<FONT color="green">051</FONT>              */<a name="line.51"></a>
+<FONT color="green">052</FONT>             public static HashMap trackPool = new HashMap();<a name="line.52"></a>
+<FONT color="green">053</FONT>    <a name="line.53"></a>
+<FONT color="green">054</FONT>             /**<a name="line.54"></a>
+<FONT color="green">055</FONT>              * The set of all existing Feature objects (Fuzzy and Exact).  It<a name="line.55"></a>
+<FONT color="green">056</FONT>              * is made public so that the user can directly access the<a name="line.56"></a>
+<FONT color="green">057</FONT>              * Features to test if a specific Feature is in the set and to<a name="line.57"></a>
+<FONT color="green">058</FONT>              * remove Features from the set in the case of deleting the<a name="line.58"></a>
+<FONT color="green">059</FONT>              * Feature. When removing Features, they must be removed from the<a name="line.59"></a>
+<FONT color="green">060</FONT>              * featurePool.  While new Features are added to the featurePool<a name="line.60"></a>
+<FONT color="green">061</FONT>              * by default, it is possible to create a Feature and not have it<a name="line.61"></a>
+<FONT color="green">062</FONT>              * added to the featurePool. This should be avoided as certain<a name="line.62"></a>
+<FONT color="green">063</FONT>              * functions require the Feature to exist in the featurePool.<a name="line.63"></a>
+<FONT color="green">064</FONT>              */<a name="line.64"></a>
+<FONT color="green">065</FONT>             //      private static HashSet featurePool = new HashSet();<a name="line.65"></a>
+<FONT color="green">066</FONT>    <a name="line.66"></a>
+<FONT color="green">067</FONT>             /** <a name="line.67"></a>
+<FONT color="green">068</FONT>              * The set of all existing Sequences.  It is made public so that<a name="line.68"></a>
+<FONT color="green">069</FONT>              * the user can directly access the tracks to test if a specific<a name="line.69"></a>
+<FONT color="green">070</FONT>              * Sequence is in the set and to remove Sequences from the set in<a name="line.70"></a>
+<FONT color="green">071</FONT>              * the case of deleting the Sequence.  When removing Sequences,<a name="line.71"></a>
+<FONT color="green">072</FONT>              * they must be removed from the sequencePool.  While new<a name="line.72"></a>
+<FONT color="green">073</FONT>              * Sequences are added to the sequencePool by default, it is<a name="line.73"></a>
+<FONT color="green">074</FONT>              * possible to create a Sequence and not have it added to the<a name="line.74"></a>
+<FONT color="green">075</FONT>              * sequencePool. This should be avoided as certain functions<a name="line.75"></a>
+<FONT color="green">076</FONT>              * require the Sequence to exist in the sequencePool.<a name="line.76"></a>
+<FONT color="green">077</FONT>              */<a name="line.77"></a>
+<FONT color="green">078</FONT>             public static HashMap sequencePool = new HashMap();<a name="line.78"></a>
+<FONT color="green">079</FONT>    <a name="line.79"></a>
+<FONT color="green">080</FONT>             /**<a name="line.80"></a>
+<FONT color="green">081</FONT>              * This is a duplicate list of Tracks in the trackPool.  It is<a name="line.81"></a>
+<FONT color="green">082</FONT>              * used by the GUI.<a name="line.82"></a>
+<FONT color="green">083</FONT>              */<a name="line.83"></a>
+<FONT color="green">084</FONT>             private static DefaultComboBoxModel trackList = new DefaultComboBoxModel();<a name="line.84"></a>
+<FONT color="green">085</FONT>    <a name="line.85"></a>
+<FONT color="green">086</FONT>             /**<a name="line.86"></a>
+<FONT color="green">087</FONT>              * This is a duplicate list of Features in the featurePool.  It is<a name="line.87"></a>
+<FONT color="green">088</FONT>              * used by the GUI.<a name="line.88"></a>
+<FONT color="green">089</FONT>              */<a name="line.89"></a>
+<FONT color="green">090</FONT>             //      private static DefaultListModel featureList = new DefaultListModel();<a name="line.90"></a>
+<FONT color="green">091</FONT>    <a name="line.91"></a>
+<FONT color="green">092</FONT>             /**<a name="line.92"></a>
+<FONT color="green">093</FONT>              * This is a duplicate list of Sequences in the sequencePool.  It is<a name="line.93"></a>
+<FONT color="green">094</FONT>              * used by the GUI.<a name="line.94"></a>
+<FONT color="green">095</FONT>              */<a name="line.95"></a>
+<FONT color="green">096</FONT>             private static DefaultComboBoxModel sequenceList = new DefaultComboBoxModel();<a name="line.96"></a>
+<FONT color="green">097</FONT>    <a name="line.97"></a>
+<FONT color="green">098</FONT>             /**<a name="line.98"></a>
+<FONT color="green">099</FONT>              * This is a list of all Tracks in the trackPool, that contain<a name="line.99"></a>
+<FONT color="green">100</FONT>              * each Sequence.  It is used by the GUI.<a name="line.100"></a>
+<FONT color="green">101</FONT>              */<a name="line.101"></a>
+<FONT color="green">102</FONT>             public static HashMap trackBySequenceList = new HashMap();<a name="line.102"></a>
+<FONT color="green">103</FONT>    <a name="line.103"></a>
+<FONT color="green">104</FONT>        //--------------------------------------------------------------------------<a name="line.104"></a>
+<FONT color="green">105</FONT>        // Setters and Getters<a name="line.105"></a>
+<FONT color="green">106</FONT>       <a name="line.106"></a>
+<FONT color="green">107</FONT>        /** Get the trackPool. */<a name="line.107"></a>
+<FONT color="green">108</FONT>        public static HashMap getTrackPool() { return trackPool; }<a name="line.108"></a>
+<FONT color="green">109</FONT>    <a name="line.109"></a>
+<FONT color="green">110</FONT>        /** Get the trackList. */<a name="line.110"></a>
+<FONT color="green">111</FONT>        public static DefaultComboBoxModel getTrackList() { return trackList; }<a name="line.111"></a>
+<FONT color="green">112</FONT>    <a name="line.112"></a>
+<FONT color="green">113</FONT>        /** Get the featurePool. */<a name="line.113"></a>
+<FONT color="green">114</FONT>             //    public static HashSet getFeaturePool() { return featurePool; }<a name="line.114"></a>
+<FONT color="green">115</FONT>    <a name="line.115"></a>
+<FONT color="green">116</FONT>        /** Get the featureList. */<a name="line.116"></a>
+<FONT color="green">117</FONT>             //    public static DefaultListModel getFeatureList() { return featureList; }<a name="line.117"></a>
+<FONT color="green">118</FONT>    <a name="line.118"></a>
+<FONT color="green">119</FONT>        /** Get the sequencePool. */<a name="line.119"></a>
+<FONT color="green">120</FONT>        public static HashMap getSequencePool() { return sequencePool; }<a name="line.120"></a>
+<FONT color="green">121</FONT>    <a name="line.121"></a>
+<FONT color="green">122</FONT>        /** Get the sequenceList. */<a name="line.122"></a>
+<FONT color="green">123</FONT>        public static DefaultComboBoxModel getSequenceList() { return sequenceList; }<a name="line.123"></a>
+<FONT color="green">124</FONT>    <a name="line.124"></a>
+<FONT color="green">125</FONT>        //--------------------------------------------------------------------------<a name="line.125"></a>
+<FONT color="green">126</FONT>        // Miscellaneous Methods<a name="line.126"></a>
+<FONT color="green">127</FONT>    <a name="line.127"></a>
+<FONT color="green">128</FONT>             /** Add a Tracks to the trackPool. */<a name="line.128"></a>
+<FONT color="green">129</FONT>             public static void addTrack(Track track) throws InvalidIDException { <a name="line.129"></a>
+<FONT color="green">130</FONT>                      String id = track.getID();<a name="line.130"></a>
+<FONT color="green">131</FONT>                      if (trackPool.containsKey(id)) {<a name="line.131"></a>
+<FONT color="green">132</FONT>                                    String msg = "ID \"" + id + "\" already exists in trackPool.";<a name="line.132"></a>
+<FONT color="green">133</FONT>                                    throw new InvalidIDException(msg);<a name="line.133"></a>
+<FONT color="green">134</FONT>                      }<a name="line.134"></a>
+<FONT color="green">135</FONT>    <a name="line.135"></a>
+<FONT color="green">136</FONT>                      // add Track to trackPool<a name="line.136"></a>
+<FONT color="green">137</FONT>                      trackPool.put(id, track); <a name="line.137"></a>
+<FONT color="green">138</FONT>    <a name="line.138"></a>
+<FONT color="green">139</FONT>                      // add Track to trackList, for GUI<a name="line.139"></a>
+<FONT color="green">140</FONT>                      trackList.addElement(id);<a name="line.140"></a>
+<FONT color="green">141</FONT>    <a name="line.141"></a>
+<FONT color="green">142</FONT>                      // add Track to appropriate trackLists in<a name="line.142"></a>
+<FONT color="green">143</FONT>                      // trackBySequenceList<a name="line.143"></a>
+<FONT color="green">144</FONT>                      Set sources = track.getSourceSet();<a name="line.144"></a>
+<FONT color="green">145</FONT>                      if (sources != null) {<a name="line.145"></a>
+<FONT color="green">146</FONT>                                    TreeSet trackSet;<a name="line.146"></a>
+<FONT color="green">147</FONT>                                    for (Iterator i = sources.iterator(); i.hasNext();) {<a name="line.147"></a>
+<FONT color="green">148</FONT>                                             String sequence = (String) i.next(); <a name="line.148"></a>
+<FONT color="green">149</FONT>                                             if (trackBySequenceList.containsKey(sequence)) {<a name="line.149"></a>
+<FONT color="green">150</FONT>                                                      trackSet = (TreeSet) trackBySequenceList.get(sequence);<a name="line.150"></a>
+<FONT color="green">151</FONT>                                             } else {<a name="line.151"></a>
+<FONT color="green">152</FONT>                                                      // we should never reach this point -- empty DLMs<a name="line.152"></a>
+<FONT color="green">153</FONT>                                                      // should be created when Sequences are added to<a name="line.153"></a>
+<FONT color="green">154</FONT>                                                      // sequencePool.<a name="line.154"></a>
+<FONT color="green">155</FONT>                                                      trackSet = new TreeSet();<a name="line.155"></a>
+<FONT color="green">156</FONT>                                             }<a name="line.156"></a>
+<FONT color="green">157</FONT>                                             trackSet.add(id);<a name="line.157"></a>
+<FONT color="green">158</FONT>                                             trackBySequenceList.put(sequence, trackSet);<a name="line.158"></a>
+<FONT color="green">159</FONT>                                    }<a name="line.159"></a>
+<FONT color="green">160</FONT>                      }<a name="line.160"></a>
+<FONT color="green">161</FONT>             }<a name="line.161"></a>
+<FONT color="green">162</FONT>    <a name="line.162"></a>
+<FONT color="green">163</FONT>             /** Removes the Track object for trackPool and other relevant lists. */<a name="line.163"></a>
+<FONT color="green">164</FONT>             public static void removeTrack(String id) {<a name="line.164"></a>
+<FONT color="green">165</FONT>                      Track track = getTrack(id);<a name="line.165"></a>
+<FONT color="green">166</FONT>                      if (track != null) removeTrack(track);<a name="line.166"></a>
+<FONT color="green">167</FONT>             }<a name="line.167"></a>
+<FONT color="green">168</FONT>    <a name="line.168"></a>
+<FONT color="green">169</FONT>             /** Removes the Track object for trackPool and other relevant lists. */<a name="line.169"></a>
+<FONT color="green">170</FONT>             public static void removeTrack(Track track) {<a name="line.170"></a>
+<FONT color="green">171</FONT>                      String id = track.getID();<a name="line.171"></a>
+<FONT color="green">172</FONT>    <a name="line.172"></a>
+<FONT color="green">173</FONT>                      // if not in trackPool, then not in any lists<a name="line.173"></a>
+<FONT color="green">174</FONT>                      if (trackPool.containsKey(id)) {<a name="line.174"></a>
+<FONT color="green">175</FONT>                                    // remove from trackPool<a name="line.175"></a>
+<FONT color="green">176</FONT>                                    trackPool.remove(id);<a name="line.176"></a>
+<FONT color="green">177</FONT>    <a name="line.177"></a>
+<FONT color="green">178</FONT>                                    // remove from trackList<a name="line.178"></a>
+<FONT color="green">179</FONT>                                    trackList.removeElement(id);<a name="line.179"></a>
+<FONT color="green">180</FONT>    <a name="line.180"></a>
+<FONT color="green">181</FONT>                                    // remove from trackBySequenceList<a name="line.181"></a>
+<FONT color="green">182</FONT>                                    Set sources = track.getSourceSet();<a name="line.182"></a>
+<FONT color="green">183</FONT>                                    if (sources != null) {<a name="line.183"></a>
+<FONT color="green">184</FONT>                                             TreeSet trackSet;<a name="line.184"></a>
+<FONT color="green">185</FONT>                                             for (Iterator i = sources.iterator(); i.hasNext();) {<a name="line.185"></a>
+<FONT color="green">186</FONT>                                                      String sequence = (String) i.next(); <a name="line.186"></a>
+<FONT color="green">187</FONT>                                                      // this test should be unnecessary, as must be in<a name="line.187"></a>
+<FONT color="green">188</FONT>                                                      // trackList if in trackPool<a name="line.188"></a>
+<FONT color="green">189</FONT>                                                      if (trackBySequenceList.containsKey(sequence)) {<a name="line.189"></a>
+<FONT color="green">190</FONT>                                                                    trackSet = (TreeSet) trackBySequenceList.get(sequence);<a name="line.190"></a>
+<FONT color="green">191</FONT>                                                                    trackSet.remove(id);<a name="line.191"></a>
+<FONT color="green">192</FONT>                                                                    trackBySequenceList.put(sequence, trackSet);<a name="line.192"></a>
+<FONT color="green">193</FONT>                                                      }<a name="line.193"></a>
+<FONT color="green">194</FONT>                                             }<a name="line.194"></a>
+<FONT color="green">195</FONT>                                    }<a name="line.195"></a>
+<FONT color="green">196</FONT>                      }<a name="line.196"></a>
+<FONT color="green">197</FONT>             }<a name="line.197"></a>
+<FONT color="green">198</FONT>    <a name="line.198"></a>
+<FONT color="green">199</FONT>             /** Rebuilds the Track relevant lists. */<a name="line.199"></a>
+<FONT color="green">200</FONT>             public static void rebuildTrack(Track track) {<a name="line.200"></a>
+<FONT color="green">201</FONT>                      removeTrack(track);<a name="line.201"></a>
+<FONT color="green">202</FONT>                      addTrack(track);<a name="line.202"></a>
+<FONT color="green">203</FONT>             }<a name="line.203"></a>
+<FONT color="green">204</FONT>    <a name="line.204"></a>
+<FONT color="green">205</FONT>             /** <a name="line.205"></a>
+<FONT color="green">206</FONT>              * Returns true if the Track object exists in the trackPool.<a name="line.206"></a>
+<FONT color="green">207</FONT>              */<a name="line.207"></a>
+<FONT color="green">208</FONT>             public static boolean containsTrack(String id) { <a name="line.208"></a>
+<FONT color="green">209</FONT>                      if (id == "") return false;<a name="line.209"></a>
+<FONT color="green">210</FONT>                      else return trackPool.containsKey(id); <a name="line.210"></a>
+<FONT color="green">211</FONT>             }<a name="line.211"></a>
+<FONT color="green">212</FONT>    <a name="line.212"></a>
+<FONT color="green">213</FONT>             /** <a name="line.213"></a>
+<FONT color="green">214</FONT>              * Returns the Track object for the given ID. <a name="line.214"></a>
+<FONT color="green">215</FONT>              * @XXX Should throw an exception if 'id' is not found.<a name="line.215"></a>
+<FONT color="green">216</FONT>              */<a name="line.216"></a>
+<FONT color="green">217</FONT>             public static Track getTrack(String id) { <a name="line.217"></a>
+<FONT color="green">218</FONT>                      if (id == "") return null;<a name="line.218"></a>
+<FONT color="green">219</FONT>                      else return (Track) trackPool.get(id); <a name="line.219"></a>
+<FONT color="green">220</FONT>             }<a name="line.220"></a>
+<FONT color="green">221</FONT>    <a name="line.221"></a>
+<FONT color="green">222</FONT>             /** Returns a iterator over all Tracks in trackPool. */<a name="line.222"></a>
+<FONT color="green">223</FONT>             public static Iterator trackIterator() { return trackPool.values().iterator(); }<a name="line.223"></a>
+<FONT color="green">224</FONT>    <a name="line.224"></a>
+<FONT color="green">225</FONT>             /** <a name="line.225"></a>
+<FONT color="green">226</FONT>              * Changes the Track's ID in trackPool, trackList, and<a name="line.226"></a>
+<FONT color="green">227</FONT>              * trackBySequenceList.<a name="line.227"></a>
+<FONT color="green">228</FONT>              */<a name="line.228"></a>
+<FONT color="green">229</FONT>             public static void renameTrack(String oldID, String newID) { <a name="line.229"></a>
+<FONT color="green">230</FONT>                      Track track = getTrack(oldID);<a name="line.230"></a>
+<FONT color="green">231</FONT>    <a name="line.231"></a>
+<FONT color="green">232</FONT>                      // make sure track exists<a name="line.232"></a>
+<FONT color="green">233</FONT>                      if (track == null) {<a name="line.233"></a>
+<FONT color="green">234</FONT>                                    GloDBUtils.printError("Track \"" + oldID + "\" not found.");<a name="line.234"></a>
+<FONT color="green">235</FONT>                                    return;<a name="line.235"></a>
+<FONT color="green">236</FONT>                      }<a name="line.236"></a>
+<FONT color="green">237</FONT>    <a name="line.237"></a>
+<FONT color="green">238</FONT>                      renameTrack(track, newID);<a name="line.238"></a>
+<FONT color="green">239</FONT>             }<a name="line.239"></a>
+<FONT color="green">240</FONT>    <a name="line.240"></a>
+<FONT color="green">241</FONT>             /** <a name="line.241"></a>
+<FONT color="green">242</FONT>              * Changes the Track's ID in trackPool, trackList, and<a name="line.242"></a>
+<FONT color="green">243</FONT>              * trackBySequenceList.<a name="line.243"></a>
+<FONT color="green">244</FONT>              */<a name="line.244"></a>
+<FONT color="green">245</FONT>             public static void renameTrack(Track track, String newID) { <a name="line.245"></a>
+<FONT color="green">246</FONT>                      // make sure track exists<a name="line.246"></a>
+<FONT color="green">247</FONT>                      if (track == null) {<a name="line.247"></a>
+<FONT color="green">248</FONT>                                    GloDBUtils.printError("Null track, can not be renamed.");<a name="line.248"></a>
+<FONT color="green">249</FONT>                                    return;<a name="line.249"></a>
+<FONT color="green">250</FONT>                      }<a name="line.250"></a>
+<FONT color="green">251</FONT>    <a name="line.251"></a>
+<FONT color="green">252</FONT>                      // check to make sure ID doesn't already exist in trackPool<a name="line.252"></a>
+<FONT color="green">253</FONT>                      if (trackPool.containsKey(newID)) {<a name="line.253"></a>
+<FONT color="green">254</FONT>                                    String msg = "ID \"" + newID + "\" already exists in trackPool.";<a name="line.254"></a>
+<FONT color="green">255</FONT>                                    throw new InvalidIDException(msg);<a name="line.255"></a>
+<FONT color="green">256</FONT>                      }<a name="line.256"></a>
+<FONT color="green">257</FONT>    <a name="line.257"></a>
+<FONT color="green">258</FONT>                      // remove the Track from trackPool and other relevant lists.<a name="line.258"></a>
+<FONT color="green">259</FONT>                      removeTrack(track);<a name="line.259"></a>
+<FONT color="green">260</FONT>    <a name="line.260"></a>
+<FONT color="green">261</FONT>                      // change ID and add to trackPool<a name="line.261"></a>
+<FONT color="green">262</FONT>                      track.id = newID;<a name="line.262"></a>
+<FONT color="green">263</FONT>                      addTrack(track);<a name="line.263"></a>
+<FONT color="green">264</FONT>             }<a name="line.264"></a>
+<FONT color="green">265</FONT>    <a name="line.265"></a>
+<FONT color="green">266</FONT>        /** <a name="line.266"></a>
+<FONT color="green">267</FONT>              * Get the trackList that contains all Tracks with the given<a name="line.267"></a>
+<FONT color="green">268</FONT>              * Sequence.<a name="line.268"></a>
+<FONT color="green">269</FONT>              */<a name="line.269"></a>
+<FONT color="green">270</FONT>        public static TreeSet getTrackBySequenceList(String id) { <a name="line.270"></a>
+<FONT color="green">271</FONT>                      return (TreeSet) trackBySequenceList.get(id); <a name="line.271"></a>
+<FONT color="green">272</FONT>             }<a name="line.272"></a>
+<FONT color="green">273</FONT>    <a name="line.273"></a>
+<FONT color="green">274</FONT>    <a name="line.274"></a>
+<FONT color="green">275</FONT>             /** Add a Feature to the featurePool. */<a name="line.275"></a>
+<FONT color="green">276</FONT>             public static void addFeature(Feature feature) { <a name="line.276"></a>
+<FONT color="green">277</FONT>                      //              featurePool.add(feature); <a name="line.277"></a>
+<FONT color="green">278</FONT>                      //              featureList.addElement(feature);<a name="line.278"></a>
+<FONT color="green">279</FONT>             }<a name="line.279"></a>
+<FONT color="green">280</FONT>    <a name="line.280"></a>
+<FONT color="green">281</FONT>             /** Returns a iterator over all Features in featurePool. */<a name="line.281"></a>
+<FONT color="green">282</FONT>             //      public static Iterator featureIterator() { return featurePool.iterator(); }<a name="line.282"></a>
+<FONT color="green">283</FONT>    <a name="line.283"></a>
+<FONT color="green">284</FONT>    <a name="line.284"></a>
+<FONT color="green">285</FONT>             /** Add a Sequence to the sequencePool. */<a name="line.285"></a>
+<FONT color="green">286</FONT>             public static void addSequence(Sequence sequence) throws InvalidIDException {<a name="line.286"></a>
+<FONT color="green">287</FONT>                      String id = sequence.getID();<a name="line.287"></a>
+<FONT color="green">288</FONT>                      if (sequencePool.containsKey(id)) {<a name="line.288"></a>
+<FONT color="green">289</FONT>                                    String msg = "ID \"" + id + "\" already exists in sequencePool.";<a name="line.289"></a>
+<FONT color="green">290</FONT>                                    throw new InvalidIDException(msg);<a name="line.290"></a>
+<FONT color="green">291</FONT>                      }<a name="line.291"></a>
+<FONT color="green">292</FONT>                              <a name="line.292"></a>
+<FONT color="green">293</FONT>                      // add Sequence to sequencePool<a name="line.293"></a>
+<FONT color="green">294</FONT>                      sequencePool.put(id, sequence);<a name="line.294"></a>
+<FONT color="green">295</FONT>    <a name="line.295"></a>
+<FONT color="green">296</FONT>                      // add Sequence to sequenceList, for GUI<a name="line.296"></a>
+<FONT color="green">297</FONT>                      sequenceList.addElement(id);<a name="line.297"></a>
+<FONT color="green">298</FONT>    <a name="line.298"></a>
+<FONT color="green">299</FONT>                      // make sure the Sequence is represented in trackBySequenceList<a name="line.299"></a>
+<FONT color="green">300</FONT>                      if (! trackBySequenceList.containsKey(id)) {<a name="line.300"></a>
+<FONT color="green">301</FONT>                                    trackBySequenceList.put(id, new TreeSet());<a name="line.301"></a>
+<FONT color="green">302</FONT>                      }<a name="line.302"></a>
+<FONT color="green">303</FONT>             }<a name="line.303"></a>
+<FONT color="green">304</FONT>    <a name="line.304"></a>
+<FONT color="green">305</FONT>             /** Removes the Sequence object for sequencePool and other relevant lists. */<a name="line.305"></a>
+<FONT color="green">306</FONT>             public static void removeSequence(Sequence sequence) {<a name="line.306"></a>
+<FONT color="green">307</FONT>                      String id = sequence.getID();<a name="line.307"></a>
+<FONT color="green">308</FONT>    <a name="line.308"></a>
+<FONT color="green">309</FONT>                      // if not in sequencePool, then not in any lists<a name="line.309"></a>
+<FONT color="green">310</FONT>                      if (sequencePool.containsKey(id)) {<a name="line.310"></a>
+<FONT color="green">311</FONT>                                    // remove from sequencePool<a name="line.311"></a>
+<FONT color="green">312</FONT>                                    sequencePool.remove(id);<a name="line.312"></a>
+<FONT color="green">313</FONT>    <a name="line.313"></a>
+<FONT color="green">314</FONT>                                    // remove from sequenceList<a name="line.314"></a>
+<FONT color="green">315</FONT>                                    sequenceList.removeElement(id);<a name="line.315"></a>
+<FONT color="green">316</FONT>                      }<a name="line.316"></a>
+<FONT color="green">317</FONT>             }<a name="line.317"></a>
+<FONT color="green">318</FONT>    <a name="line.318"></a>
+<FONT color="green">319</FONT>             /** <a name="line.319"></a>
+<FONT color="green">320</FONT>              * Returns true if the Sequence object exists in the sequencePool.<a name="line.320"></a>
+<FONT color="green">321</FONT>              */<a name="line.321"></a>
+<FONT color="green">322</FONT>             public static boolean containsSequence(String id) { <a name="line.322"></a>
+<FONT color="green">323</FONT>                      if (id == "") return false;<a name="line.323"></a>
+<FONT color="green">324</FONT>                      else return sequencePool.containsKey(id); <a name="line.324"></a>
+<FONT color="green">325</FONT>             }<a name="line.325"></a>
+<FONT color="green">326</FONT>    <a name="line.326"></a>
+<FONT color="green">327</FONT>             /** Returns a iterator over all Sequences in sequencePool. */<a name="line.327"></a>
+<FONT color="green">328</FONT>             public static Iterator sequenceIterator() { return sequencePool.values().iterator(); }<a name="line.328"></a>
+<FONT color="green">329</FONT>    <a name="line.329"></a>
+<FONT color="green">330</FONT>             /** <a name="line.330"></a>
+<FONT color="green">331</FONT>              * Returns the Sequence object for the given ID. <a name="line.331"></a>
+<FONT color="green">332</FONT>              * @XXX Should throw an exception if 'id' is not found.<a name="line.332"></a>
+<FONT color="green">333</FONT>              */<a name="line.333"></a>
+<FONT color="green">334</FONT>             public static Sequence getSequence(String id) { <a name="line.334"></a>
+<FONT color="green">335</FONT>                      if (id == "") return null;<a name="line.335"></a>
+<FONT color="green">336</FONT>                      else return (Sequence) sequencePool.get(id); <a name="line.336"></a>
+<FONT color="green">337</FONT>             }<a name="line.337"></a>
+<FONT color="green">338</FONT>    <a name="line.338"></a>
+<FONT color="green">339</FONT>             /*<a name="line.339"></a>
+<FONT color="green">340</FONT>              * Changes the Sequence's ID in sequencePool, sequenceList, and<a name="line.340"></a>
+<FONT color="green">341</FONT>              * trackBySequenceList.<a name="line.341"></a>
+<FONT color="green">342</FONT>              * @XXX WARNING, this needs to change the relevant Feature.source<a name="line.342"></a>
+<FONT color="green">343</FONT>              * values when the sequence ID changes.<a name="line.343"></a>
+<FONT color="green">344</FONT>              * @XXX could only allow this if trackSet is empty but that might<a name="line.344"></a>
+<FONT color="green">345</FONT>              * be confusing<a name="line.345"></a>
+<FONT color="green">346</FONT>              */<a name="line.346"></a>
+<FONT color="green">347</FONT>             /*<a name="line.347"></a>
+<FONT color="green">348</FONT>             public static void renameSequence(Sequence sequence, String newID) { <a name="line.348"></a>
+<FONT color="green">349</FONT>                      // check to make sure ID doesn't already exist in sequencePool<a name="line.349"></a>
+<FONT color="green">350</FONT>                      if (sequencePool.containsKey(newID)) {<a name="line.350"></a>
+<FONT color="green">351</FONT>                                    String msg = "ID \"" + newID + "\" already exists in sequencePool.";<a name="line.351"></a>
+<FONT color="green">352</FONT>                                    throw new InvalidIDException(msg);<a name="line.352"></a>
+<FONT color="green">353</FONT>                      }<a name="line.353"></a>
+<FONT color="green">354</FONT>    <a name="line.354"></a>
+<FONT color="green">355</FONT>                      // remove the Sequence from sequencePool and other relevant lists<a name="line.355"></a>
+<FONT color="green">356</FONT>                      removeSequence(sequence);<a name="line.356"></a>
+<FONT color="green">357</FONT>    <a name="line.357"></a>
+<FONT color="green">358</FONT>                      // update the sequence reference in trackBySequenceList<a name="line.358"></a>
+<FONT color="green">359</FONT>                      String oldID = sequence.getID();<a name="line.359"></a>
+<FONT color="green">360</FONT>                      if (trackBySequenceList.containsKey(oldID)) {<a name="line.360"></a>
+<FONT color="green">361</FONT>                                    TreeSet trackSet = (TreeSet) trackBySequenceList.get(oldID);<a name="line.361"></a>
+<FONT color="green">362</FONT>                                    trackBySequenceList.remove(oldID);<a name="line.362"></a>
+<FONT color="green">363</FONT>                                    trackBySequenceList.put(newID, trackSet);<a name="line.363"></a>
+<FONT color="green">364</FONT>                      }<a name="line.364"></a>
+<FONT color="green">365</FONT>                                    <a name="line.365"></a>
+<FONT color="green">366</FONT>                      // change ID and add to sequencePool<a name="line.366"></a>
+<FONT color="green">367</FONT>                      sequence.id = newID;<a name="line.367"></a>
+<FONT color="green">368</FONT>                      addSequence(sequence);<a name="line.368"></a>
+<FONT color="green">369</FONT>             }<a name="line.369"></a>
+<FONT color="green">370</FONT>             */<a name="line.370"></a>
+<FONT color="green">371</FONT>    } // ObjectHandles.java<a name="line.371"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

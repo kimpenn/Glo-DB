@@ -1,0 +1,154 @@
+Genomic Locus Operation - DataBase (Glo-DB)
+===========================================
+
+Copyright 2007, 2012 Stephen Fisher and Junhyong Kim, University of
+Pennsylvania.
+
+Glo-DB is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Glo-DB is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Glo-DB. If not, see <http://www.gnu.org/licenses/>.
+
+===========================================
+Overview:
+
+GLO-DB is designed to perform position-based queries of genomic
+sequence annotations (features). It contains a query language that
+affords many different types of position searches via command line and
+graphical user interfaces, and incorporates various visualization
+tools. In this application, features are combined into sets, called
+"tracks," where a single track can contain features from any number of
+genomics sequences. For example, a track might contain all exons in a
+genome, the introns on a particular chromosome segment, etc. These
+feature sets can be loaded from different types of text files but are
+best represented by GFF (General Feature Format) files. These files
+are structured so that each line encodes a single feature and thus one
+file can contain all the features in a track.
+
+http://www.sanger.ac.uk/Software/formats/GFF/GFF_Spec.shtml
+
+Since features are just start and stop positions on a sequence, each
+feature can be viewed as a unique object located on the sequence or as
+a mask over the specified region of the sequence. GLO-DB’s built- in
+operators will seamlessly manipulate features in either
+representation. For example, a user might be interested in the set of
+all exons on a chromosome that overlap with a specific set of genes on
+that same chromosome. In this case one track would contain the set of
+exons ("exon_track"), another the set of genes ("gene_track"). To find
+all overlapping features, the user would perform an "AND" operation on
+these two sets of features, returning a track containing the set of
+overlapping features ("exon_track AND gene_track"). If the user only
+wanted the exons in the output set, the genes could then be subtracted
+out ("((exon_track AND gene_track) sMINUS gene_track)").
+Alternatively, a user could "subtract" the positions of the exons on a
+chromosome from the gene positions, to get a track containing a set of
+new features that represent the introns in the genes. Using tracks
+containing the exons ("exon_track") and genes ("gene_track"), the user
+would then negate the two ("gene_track – exon_track"), returning a set
+of new features encoding the positions within the genes not encoded by
+the exons. In the first example, the "set based" operators acted on
+the features as immutable position pairs allowing for the sets to be
+altered but not the features themselves. In the second example, the
+"binary" operator acted on the features as positions on the sequence,
+allowing for the features to be spliced and merged into new features.
+
+
+===========================================
+System Requirements:
+
+The system requirements will depend on the size of the datasets being
+processed. The application has been tested to run on Mac OS 10.6,
+10.7, and 10.8, RedHat Linux 5, and Windows XP.
+
+Minimum Requirements:
+
+	* 128 MB of RAM is sufficient to run the application. Using Mac OS
+      10.8 the tutorial takes 1.5 GB of RAM.
+
+	* 15 MB of hard drive space for application files. Sample data
+      files will require an additional 250 MB of hard drive space.
+
+	* Java version 1.5
+
+
+===========================================
+Installing and Running GLO-DB:
+
+In order to run GLO-DB, it is necessary to first install java version
+1.5 or later. If not already installed, java can download java from
+the Sun java website.
+
+http://www.java.com/en/download/manual.jsp
+
+Linux Installation:
+	1. Unzip the package in the desired directory. >> unzip gloDB.zip
+	2. If needed adjust the attributes for the application executable. >> chmod a+x gloDB.sh
+
+	Running:
+	1. Change directories into the “gloDB” directory and run "./gloDB.sh".
+
+Microsoft Windows 2000 or later Installation:
+	1. Unzip the package in the desired directory (WinZip or some other pkzip based application will suffice).
+
+	Running:
+	1. From within the “gloDB” folder double-click the "gloDB.bat" application.
+
+Mac OS X Installation:
+	1. Unzip the package in the desired directory. >> unzip gloDB.zip
+
+	2. If needed, adjust the attributes for the application executable. >> chmod a+x gloDB.sh
+
+	Running:
+	1. Change directories into the “gloDB” directory and run "./gloDB.sh".
+
+===========================================
+Known Issues:
+
+	* Many features still not implemented in GUI.
+
+	* GenBank (*.gb) file format not implemented.
+
+	* Need better integration with Genome Browser. Upgrading from
+	  Swing to JavaFX will allow for display of Genome Browser webpage
+	  from within app (requires Javascript). Also should have export
+	  option that makes sure attributes filed is properly formatted in
+	  GFF files for importing into Genome Browser (the first word in
+	  attributes field needs to be unique).
+
+	* Need to allow for loading of FASTA files that contain multiple
+      sequences.
+
+	* Need to implement database and URL options for loading sequence
+      data.
+
+	* Should include “contained()” and “xor()” examples in Jython.
+
+
+===========================================
+Contact Information:
+
+Dr. Stephen Fisher 
+Biology Department 
+University of Pennsylvania 
+433 S. University Ave
+Philadelphia, PA 19104
+
+safisher@sas.upenn.edu
+(215) 898-8395
+
+Dr. Junhyong Kim
+Biology Department
+University of Pennsylvania
+433 S. University Ave
+Philadelphia, PA 19104
+
+junhyong@sas.upenn.edu 
+(215) 746-5187
